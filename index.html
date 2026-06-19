@@ -49,29 +49,30 @@
         }
     </style>
 </head>
-<body class="bg-gray-50 text-gray-800 min-h-screen flex flex-col">
+<body class="bg-gray-50 text-gray-800 min-h-screen flex flex-col pattern-bg">
 
     <!-- TOP HEADER / BRANDING BAR -->
-    <header class="bg-primary text-white border-b-4 border-accent shadow-lg">
-        <div class="max-w-7xl mx-auto px-4 py-3 flex flex-col sm:flex-row justify-between items-center space-y-2 sm:space-y-0">
-            <div class="flex items-center space-x-3">
-                <div class="bg-white p-1.5 rounded-full shadow-md flex items-center justify-center">
-                    <!-- Lambang Kubah/Bintang Islami representatif -->
-                    <svg class="w-8 h-8 color-primary" viewBox="0 0 24 24" fill="currentColor">
-                        <path d="M12,2A10,10,0,0,0,2,12a10,10,0,0,0,10,10,10,10,0,0,0,10-10A10,10,0,0,0,12,2Zm1,17.93V17a1,1,0,0,0-2,0v2.93A8,8,0,0,1,4.07,13H7a1,1,0,0,0,0-2H4.07A8,8,0,0,1,11,4.07V7a1,1,0,0,0,2,0V4.07A8,8,0,0,1,19.93,11H17a1,1,0,0,0,0,2h2.93A8,8,0,0,1,13,19.93Z"/>
-                    </svg>
+    <header class="bg-primary text-white border-b-4 border-accent shadow-lg sticky top-0 z-40">
+        <div class="max-w-7xl mx-auto px-4 py-3 flex flex-col md:flex-row justify-between items-center space-y-3 md:space-y-0">
+            <div class="flex items-center space-x-3.5 text-center md:text-left flex-col md:flex-row">
+                <div class="bg-white p-1 rounded-full shadow-md flex items-center justify-center w-12 h-12 md:w-14 md:h-14 mb-2 md:mb-0 transition-transform hover:scale-105">
+                    <!-- Lambang Resmi UIN Ar-Raniry Banda Aceh -->
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/a/af/Lambang_UIN_Ar-Raniry.png/960px-Lambang_UIN_Ar-Raniry.png" 
+                         alt="Logo UIN Ar-Raniry" 
+                         class="w-10 h-10 md:w-12 md:h-12 object-contain"
+                         onerror="this.onerror=null; this.src='https://raw.githubusercontent.com/Ar-Raniry-Assets/logo/main/logo.png';">
                 </div>
-                <div class="text-center sm:text-left">
-                    <h1 class="text-lg font-extrabold tracking-wide">UIN AR-RANIRY BANDA ACEH</h1>
+                <div>
+                    <h1 class="text-md md:text-xl font-extrabold tracking-wide drop-shadow-sm">UIN AR-RANIRY BANDA ACEH</h1>
                     <p class="text-xs text-yellow-300 font-semibold tracking-wider uppercase">Sistem Absensi Petugas Kebersihan</p>
                 </div>
             </div>
-            <div class="flex items-center space-x-2">
-                <span id="connection-badge" class="px-3 py-1 text-xs rounded-full bg-yellow-500 text-black font-semibold shadow flex items-center gap-1.5">
-                    <span class="w-2.5 h-2.5 rounded-full bg-white animate-pulse"></span>
+            <div class="flex items-center space-x-2 flex-wrap justify-center">
+                <span id="connection-badge" class="px-3 py-1 text-[11px] rounded-full bg-yellow-500 text-black font-extrabold shadow flex items-center gap-1.5 transition-all">
+                    <span class="w-2 h-2 rounded-full bg-white animate-pulse"></span>
                     <span id="connection-text">Mode Simulasi (Demo)</span>
                 </span>
-                <button id="btn-portal-display" onclick="switchView('display-monitor')" class="bg-accent text-primary px-3 py-1 rounded text-xs font-bold hover:bg-yellow-400 transition flex items-center gap-1">
+                <button id="btn-portal-display" onclick="switchView('display-monitor')" class="bg-accent text-primary px-3 py-1.5 rounded-lg text-xs font-bold hover:bg-yellow-400 transition-all flex items-center gap-1 shadow-sm">
                     <i class="fa-solid fa-desktop"></i> Monitor Live
                 </button>
             </div>
@@ -79,15 +80,15 @@
     </header>
 
     <!-- CONTENT APP (SPA RENDER AREA) -->
-    <main class="flex-grow max-w-7xl w-full mx-auto p-4 md:p-6">
+    <main class="flex-grow max-w-7xl w-full mx-auto p-3 md:p-6">
         <div id="alert-container" class="hidden mb-4"></div>
 
         <!-- VIEW 1: LOGIN PORTAL -->
-        <section id="view-login" class="max-w-md mx-auto my-12">
+        <section id="view-login" class="max-w-md mx-auto my-6 md:my-12 px-2">
             
             <!-- RUNNING TEXT BANNER (Diatas Kotak Portal Absensi) -->
-            <div id="running-info-banner" class="mb-4 bg-yellow-50 border border-yellow-200 text-yellow-800 rounded-xl overflow-hidden py-2.5 px-4 shadow-sm flex items-center relative">
-                <span class="bg-accent text-primary text-[10px] font-extrabold px-2 py-0.5 rounded mr-3 z-10 whitespace-nowrap flex items-center gap-1 shadow-sm">
+            <div id="running-info-banner" class="mb-5 bg-yellow-50 border border-yellow-200 text-yellow-800 rounded-2xl overflow-hidden py-3 px-4 shadow-sm flex items-center relative">
+                <span class="bg-accent text-primary text-[10px] font-extrabold px-2 py-1 rounded-md mr-3 z-10 whitespace-nowrap flex items-center gap-1 shadow-sm">
                     <i class="fa-solid fa-circle-info animate-pulse"></i> INFO UTAMA
                 </span>
                 <div class="relative w-full overflow-hidden whitespace-nowrap">
@@ -98,55 +99,55 @@
             </div>
 
             <!-- Login Box -->
-            <div class="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
+            <div class="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden transition-all duration-300 hover:shadow-2xl">
                 <div class="bg-primary p-6 text-white text-center relative overflow-hidden">
                     <div class="absolute -right-10 -bottom-10 opacity-10 text-white text-9xl">
                         <i class="fa-solid fa-mosque"></i>
                     </div>
-                    <h2 class="text-xl font-bold">Portal Absensi</h2>
-                    <p class="text-xs text-gray-200 mt-1">Silakan masuk sesuai hak akses Anda</p>
+                    <h2 class="text-xl font-bold tracking-wide">Portal Absensi</h2>
+                    <p class="text-xs text-emerald-100 mt-1">Silakan masuk sesuai hak akses Anda</p>
                 </div>
                 
-                <div class="p-6 space-y-4">
+                <div class="p-5 md:p-7 space-y-5">
                     <!-- Role Switcher -->
-                    <div class="flex bg-gray-100 p-1 rounded-lg">
-                        <button id="tab-login-petugas" onclick="setLoginRole('petugas')" class="flex-1 py-2 text-center text-sm font-semibold rounded-md bg-white text-primary shadow-sm transition">
-                            <i class="fa-solid fa-user-tag mr-1.5"></i> Petugas
+                    <div class="flex bg-gray-100 p-1.5 rounded-xl">
+                        <button id="tab-login-petugas" onclick="setLoginRole('petugas')" class="flex-1 py-2.5 text-center text-xs md:text-sm font-bold rounded-lg bg-white text-primary shadow-sm transition-all duration-200">
+                            <i class="fa-solid fa-user-tag mr-1.5 text-xs md:text-sm"></i> Petugas
                         </button>
-                        <button id="tab-login-admin" onclick="setLoginRole('admin')" class="flex-1 py-2 text-center text-sm font-semibold rounded-md text-gray-500 hover:text-gray-700 transition">
-                            <i class="fa-solid fa-user-shield mr-1.5"></i> Operator / Admin
+                        <button id="tab-login-admin" onclick="setLoginRole('admin')" class="flex-1 py-2.5 text-center text-xs md:text-sm font-bold rounded-lg text-gray-500 hover:text-gray-700 transition-all duration-200">
+                            <i class="fa-solid fa-user-shield mr-1.5 text-xs md:text-sm"></i> Operator / Admin
                         </button>
                     </div>
 
                     <form id="form-login" onsubmit="handleLoginSubmit(event)" class="space-y-4">
                         <div>
-                            <label class="block text-xs font-bold uppercase tracking-wider text-gray-500 mb-1">Username</label>
+                            <label class="block text-[11px] font-bold uppercase tracking-wider text-gray-500 mb-1.5">Username</label>
                             <div class="relative">
-                                <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400">
+                                <span class="absolute inset-y-0 left-0 flex items-center pl-3.5 text-gray-400">
                                     <i class="fa-solid fa-user"></i>
                                 </span>
-                                <input id="login-username" type="text" required class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition text-sm" placeholder="Masukkan username">
+                                <input id="login-username" type="text" required class="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition text-sm" placeholder="Masukkan username">
                             </div>
                         </div>
 
                         <div>
-                            <label class="block text-xs font-bold uppercase tracking-wider text-gray-500 mb-1">Password</label>
+                            <label class="block text-[11px] font-bold uppercase tracking-wider text-gray-500 mb-1.5">Password</label>
                             <div class="relative">
-                                <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400">
+                                <span class="absolute inset-y-0 left-0 flex items-center pl-3.5 text-gray-400">
                                     <i class="fa-solid fa-lock"></i>
                                 </span>
-                                <input id="login-password" type="password" required class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition text-sm" placeholder="Masukkan password">
+                                <input id="login-password" type="password" required class="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition text-sm" placeholder="Masukkan password">
                             </div>
                         </div>
 
-                        <button type="submit" id="btn-login" class="w-full bg-primary text-white py-2.5 rounded-lg font-bold text-sm tracking-wide shadow-md bg-primary-hover transition flex items-center justify-center gap-2">
+                        <button type="submit" id="btn-login" class="w-full bg-primary text-white py-3 rounded-xl font-bold text-sm tracking-wide shadow-md hover:bg-primary-hover active:scale-95 transition-all flex items-center justify-center gap-2">
                             <span>Masuk Sistem</span>
-                            <i class="fa-solid fa-arrow-right"></i>
+                            <i class="fa-solid fa-arrow-right text-xs"></i>
                         </button>
                     </form>
 
                     <div class="text-center pt-2">
-                        <p class="text-xs text-gray-400">Lupa password? Hubungi operator bagian administrasi UIN Ar-Raniry.</p>
+                        <p class="text-[11px] text-gray-400">Lupa password? Hubungi operator bagian administrasi UIN Ar-Raniry.</p>
                     </div>
                 </div>
             </div>
@@ -155,101 +156,101 @@
         <!-- VIEW 2: DASHBOARD PETUGAS -->
         <section id="view-petugas-dashboard" class="hidden space-y-6">
             <!-- Header User Profil -->
-            <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+            <div class="bg-white p-5 md:p-6 rounded-2xl shadow-sm border border-gray-100 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                 <div class="flex items-center space-x-4">
-                    <div class="w-16 h-16 rounded-full bg-emerald-100 flex items-center justify-center text-primary text-2xl font-bold border-2 border-accent">
+                    <div class="w-14 h-14 md:w-16 md:h-16 rounded-full bg-emerald-100 flex items-center justify-center text-primary text-xl md:text-2xl font-bold border-2 border-accent shadow-inner flex-shrink-0">
                         <span id="petugas-avatar-text">PK</span>
                     </div>
                     <div>
-                        <h2 id="petugas-welcome" class="text-xl font-bold text-gray-900">Nama Petugas</h2>
-                        <p class="text-sm text-gray-500 flex items-center gap-1">
+                        <h2 id="petugas-welcome" class="text-lg md:text-xl font-bold text-gray-900 leading-tight">Nama Petugas</h2>
+                        <p class="text-xs md:text-sm text-gray-500 flex items-center gap-1.5 mt-1">
                             <i class="fa-solid fa-map-location-dot color-accent"></i>
                             <span id="petugas-lokasi">Gedung Rektorat</span>
                         </p>
-                        <p class="text-xs text-gray-400" id="petugas-id-display">ID Petugas: P001</p>
+                        <p class="text-[10px] md:text-xs text-gray-400 mt-0.5" id="petugas-id-display">ID Petugas: P001</p>
                     </div>
                 </div>
-                <div class="flex gap-2">
-                    <button onclick="handleLogout()" class="px-4 py-2 border border-red-200 text-red-600 rounded-xl text-sm font-semibold hover:bg-red-50 transition flex items-center gap-1.5">
+                <div class="flex w-full md:w-auto">
+                    <button onclick="handleLogout()" class="w-full md:w-auto px-4 py-2 border border-red-200 text-red-600 rounded-xl text-xs md:text-sm font-bold hover:bg-red-50 transition-all flex items-center justify-center gap-1.5">
                         <i class="fa-solid fa-power-off"></i> Keluar
                     </button>
                 </div>
             </div>
 
             <!-- Bagian Info & Announcement -->
-            <div id="petugas-announcement-banner" class="bg-yellow-50 border-l-4 border-yellow-500 p-4 rounded-r-xl hidden shadow-sm">
+            <div id="petugas-announcement-banner" class="bg-yellow-50 border-l-4 border-yellow-500 p-4 rounded-r-2xl hidden shadow-sm">
                 <div class="flex items-start">
                     <div class="flex-shrink-0 text-yellow-600">
-                        <i class="fa-solid fa-bullhorn text-xl"></i>
+                        <i class="fa-solid fa-bullhorn text-lg"></i>
                     </div>
                     <div class="ml-3">
-                        <h3 class="text-sm font-bold text-yellow-800">Pengumuman Terbaru</h3>
+                        <h3 class="text-xs md:text-sm font-bold text-yellow-800">Pengumuman Terbaru</h3>
                         <p class="text-xs text-yellow-700 mt-1" id="announcement-content">Tidak ada pengumuman hari ini.</p>
                     </div>
                 </div>
             </div>
 
             <!-- Tombol Aksi Absensi (Clock In / Clock Out) -->
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
                 <!-- PANEL ABSEN DATANG -->
-                <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex flex-col justify-between space-y-4">
+                <div class="bg-white p-5 md:p-6 rounded-2xl shadow-sm border border-gray-100 flex flex-col justify-between space-y-4">
                     <div>
                         <div class="flex justify-between items-center">
-                            <span class="text-xs font-bold uppercase tracking-wider text-emerald-600 bg-emerald-50 px-2.5 py-1 rounded-full">Absensi Masuk</span>
-                            <span class="text-xs text-gray-400"><i class="fa-regular fa-clock"></i> Batas: 07.30 WIB</span>
+                            <span class="text-[10px] md:text-xs font-bold uppercase tracking-wider text-emerald-600 bg-emerald-50 px-2.5 py-1 rounded-full">Absensi Masuk</span>
+                            <span class="text-[10px] md:text-xs text-gray-400"><i class="fa-regular fa-clock"></i> Batas: 07.30 WIB</span>
                         </div>
-                        <h3 class="text-lg font-bold text-gray-800 mt-3">Jam Datang</h3>
-                        <p class="text-xs text-gray-400">Pastikan Anda sudah berada di lokasi kerja sebelum menekan tombol absen.</p>
-                        <div class="mt-4 bg-gray-50 p-4 rounded-xl text-center">
-                            <span id="time-display-datang" class="text-3xl font-extrabold text-gray-700">- - : - -</span>
+                        <h3 class="text-md md:text-lg font-bold text-gray-800 mt-3">Jam Datang</h3>
+                        <p class="text-xs text-gray-400 mt-1">Pastikan Anda sudah berada di lokasi kerja sebelum menekan tombol absen.</p>
+                        <div class="mt-4 bg-gray-50 p-4 rounded-xl text-center shadow-inner">
+                            <span id="time-display-datang" class="text-2xl md:text-3xl font-extrabold text-gray-700">- - : - -</span>
                         </div>
                     </div>
-                    <button id="btn-absen-datang" onclick="triggerAbsen('datang')" class="w-full bg-primary text-white py-3 rounded-xl font-bold shadow-md bg-primary-hover transition flex items-center justify-center gap-2">
-                        <i class="fa-solid fa-right-to-bracket"></i>
-                        <span>Absen Datang Sekarang</span>
+                    <button id="btn-absen-datang" onclick="triggerAbsen('datang')" class="w-full bg-primary text-white py-3 md:py-3.5 rounded-xl font-bold shadow-md hover:bg-primary-hover active:scale-95 transition-all flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-right-to-bracket text-xs md:text-sm"></i>
+                        <span class="text-xs md:text-sm">Absen Datang Sekarang</span>
                     </button>
                 </div>
 
                 <!-- PANEL ABSEN PULANG -->
-                <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex flex-col justify-between space-y-4">
+                <div class="bg-white p-5 md:p-6 rounded-2xl shadow-sm border border-gray-100 flex flex-col justify-between space-y-4">
                     <div>
                         <div class="flex justify-between items-center">
-                            <span class="text-xs font-bold uppercase tracking-wider text-orange-600 bg-orange-50 px-2.5 py-1 rounded-full">Absensi Pulang</span>
-                            <span class="text-xs text-gray-400"><i class="fa-regular fa-clock"></i> Mulai: 16.00 WIB</span>
+                            <span class="text-[10px] md:text-xs font-bold uppercase tracking-wider text-orange-600 bg-orange-50 px-2.5 py-1 rounded-full">Absensi Pulang</span>
+                            <span class="text-[10px] md:text-xs text-gray-400"><i class="fa-regular fa-clock"></i> Mulai: 16.00 WIB</span>
                         </div>
-                        <h3 class="text-lg font-bold text-gray-800 mt-3">Jam Pulang</h3>
-                        <p class="text-xs text-gray-400">Tekan tombol ini saat jam kerja Anda sudah selesai.</p>
-                        <div class="mt-4 bg-gray-50 p-4 rounded-xl text-center">
-                            <span id="time-display-pulang" class="text-3xl font-extrabold text-gray-700">- - : - -</span>
+                        <h3 class="text-md md:text-lg font-bold text-gray-800 mt-3">Jam Pulang</h3>
+                        <p class="text-xs text-gray-400 mt-1">Tekan tombol ini saat jam kerja Anda sudah selesai.</p>
+                        <div class="mt-4 bg-gray-50 p-4 rounded-xl text-center shadow-inner">
+                            <span id="time-display-pulang" class="text-2xl md:text-3xl font-extrabold text-gray-700">- - : - -</span>
                         </div>
                     </div>
-                    <button id="btn-absen-pulang" onclick="triggerAbsen('pulang')" class="w-full bg-gray-300 text-gray-600 py-3 rounded-xl font-bold cursor-not-allowed transition flex items-center justify-center gap-2" disabled>
-                        <i class="fa-solid fa-right-from-bracket"></i>
-                        <span>Absen Pulang Sekarang</span>
+                    <button id="btn-absen-pulang" onclick="triggerAbsen('pulang')" class="w-full bg-gray-300 text-gray-600 py-3 md:py-3.5 rounded-xl font-bold cursor-not-allowed transition-all flex items-center justify-center gap-2" disabled>
+                        <i class="fa-solid fa-right-from-bracket text-xs md:text-sm"></i>
+                        <span class="text-xs md:text-sm">Absen Pulang Sekarang</span>
                     </button>
                 </div>
             </div>
 
             <!-- Rekap Kehadiran Bulanan Petugas -->
-            <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+            <div class="bg-white p-4 md:p-6 rounded-2xl shadow-sm border border-gray-100">
                 <div class="flex justify-between items-center mb-4">
-                    <h3 class="text-md font-bold text-gray-900 flex items-center gap-2">
+                    <h3 class="text-sm md:text-md font-bold text-gray-900 flex items-center gap-2">
                         <i class="fa-solid fa-calendar-check color-primary"></i>
                         <span>Rekap Kehadiran Bulanan</span>
                     </h3>
                     <span class="text-xs font-semibold text-gray-500" id="rekap-bulan-name">Bulan Ini</span>
                 </div>
-                <div class="overflow-x-auto">
+                <div class="overflow-x-auto rounded-xl border border-gray-100">
                     <table class="w-full text-left border-collapse">
                         <thead>
-                            <tr class="bg-gray-50 border-b border-gray-100 text-xs text-gray-500 font-bold uppercase">
+                            <tr class="bg-gray-50 border-b border-gray-100 text-[10px] md:text-xs text-gray-500 font-bold uppercase">
                                 <th class="p-3">Tanggal</th>
                                 <th class="p-3">Jam Datang</th>
                                 <th class="p-3">Jam Pulang</th>
-                                <th class="p-3">Status</th>
+                                <th class="p-3 text-center">Status</th>
                             </tr>
                         </thead>
-                        <tbody id="petugas-table-riwayat-body" class="text-sm divide-y divide-gray-100">
+                        <tbody id="petugas-table-riwayat-body" class="text-xs md:text-sm divide-y divide-gray-100">
                             <!-- JS Renders Rows -->
                             <tr>
                                 <td colspan="4" class="p-4 text-center text-gray-400 text-xs">Belum ada riwayat absensi.</td>
@@ -263,42 +264,42 @@
         <!-- VIEW 3: DASHBOARD ADMIN -->
         <section id="view-admin-dashboard" class="hidden space-y-6">
             <!-- Header Admin -->
-            <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+            <div class="bg-white p-5 md:p-6 rounded-2xl shadow-sm border border-gray-100 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                 <div>
-                    <h2 class="text-xl font-bold text-gray-900">Dashboard Administrasi & Operator</h2>
-                    <p class="text-xs text-gray-500">Kelola petugas, cetak laporan bulanan, dan kelola pengumuman.</p>
+                    <h2 class="text-lg md:text-xl font-bold text-gray-900">Dashboard Administrasi & Operator</h2>
+                    <p class="text-xs text-gray-500 mt-0.5">Kelola petugas, cetak laporan bulanan, dan kelola pengumuman.</p>
                 </div>
-                <div class="flex gap-2 flex-wrap">
-                    <button onclick="switchView('display-monitor')" class="bg-emerald-50 text-primary px-3 py-2 rounded-xl text-xs font-bold hover:bg-emerald-100 transition flex items-center gap-1">
+                <div class="flex gap-2 flex-wrap w-full sm:w-auto">
+                    <button onclick="switchView('display-monitor')" class="flex-1 sm:flex-initial bg-emerald-50 text-primary px-3 py-2 rounded-xl text-xs font-bold hover:bg-emerald-100 transition-all flex items-center justify-center gap-1.5">
                         <i class="fa-solid fa-desktop"></i> Monitor
                     </button>
-                    <button onclick="handleLogout()" class="px-4 py-2 border border-red-200 text-red-600 rounded-xl text-sm font-semibold hover:bg-red-50 transition flex items-center gap-1.5">
+                    <button onclick="handleLogout()" class="flex-1 sm:flex-initial px-4 py-2 border border-red-200 text-red-600 rounded-xl text-xs sm:text-sm font-bold hover:bg-red-50 transition-all flex items-center justify-center gap-1.5">
                         <i class="fa-solid fa-power-off"></i> Keluar
                     </button>
                 </div>
             </div>
 
-            <!-- Tab Navigasi Admin -->
-            <div class="flex space-x-1 bg-gray-100 p-1 rounded-xl">
-                <button id="tab-admin-petugas" onclick="setAdminTab('petugas')" class="flex-1 py-2.5 text-center text-xs font-bold rounded-lg bg-white text-primary shadow-sm transition">
+            <!-- Tab Navigasi Admin (Responsive grid on mobile) -->
+            <div class="grid grid-cols-2 md:flex md:space-x-1 bg-gray-100 p-1.5 rounded-xl gap-1 md:gap-0">
+                <button id="tab-admin-petugas" onclick="setAdminTab('petugas')" class="py-2.5 text-center text-[11px] md:text-xs font-extrabold rounded-lg bg-white text-primary shadow-sm transition-all duration-200">
                     <i class="fa-solid fa-users mr-1"></i> Data Petugas
                 </button>
-                <button id="tab-admin-rekap" onclick="setAdminTab('rekap')" class="flex-1 py-2.5 text-center text-xs font-bold rounded-lg text-gray-500 hover:text-gray-700 transition">
+                <button id="tab-admin-rekap" onclick="setAdminTab('rekap')" class="py-2.5 text-center text-[11px] md:text-xs font-extrabold rounded-lg text-gray-500 hover:text-gray-700 transition-all duration-200">
                     <i class="fa-solid fa-print mr-1"></i> Rekap Laporan
                 </button>
-                <button id="tab-admin-pengumuman" onclick="setAdminTab('pengumuman')" class="flex-1 py-2.5 text-center text-xs font-bold rounded-lg text-gray-500 hover:text-gray-700 transition">
+                <button id="tab-admin-pengumuman" onclick="setAdminTab('pengumuman')" class="py-2.5 text-center text-[11px] md:text-xs font-extrabold rounded-lg text-gray-500 hover:text-gray-700 transition-all duration-200">
                     <i class="fa-solid fa-bullhorn mr-1"></i> Pengumuman
                 </button>
-                <button id="tab-admin-config" onclick="setAdminTab('config')" class="flex-1 py-2.5 text-center text-xs font-bold rounded-lg text-gray-500 hover:text-gray-700 transition">
+                <button id="tab-admin-config" onclick="setAdminTab('config')" class="py-2.5 text-center text-[11px] md:text-xs font-extrabold rounded-lg text-gray-500 hover:text-gray-700 transition-all duration-200">
                     <i class="fa-solid fa-gears mr-1"></i> API Config
                 </button>
             </div>
 
             <!-- ADMIN TAB 1: KELOLA PETUGAS -->
             <div id="admin-panel-petugas" class="space-y-4">
-                <div class="flex justify-between items-center">
-                    <h3 class="text-md font-bold text-gray-900">Daftar Petugas Aktif</h3>
-                    <button onclick="openFormPetugasModal('create')" class="bg-primary text-white text-xs px-3 py-2 rounded-lg font-bold hover:bg-primary-hover transition flex items-center gap-1.5">
+                <div class="flex justify-between items-center flex-col sm:flex-row gap-2 sm:gap-0">
+                    <h3 class="text-sm md:text-md font-bold text-gray-900">Daftar Petugas Aktif</h3>
+                    <button onclick="openFormPetugasModal('create')" class="w-full sm:w-auto bg-primary text-white text-xs px-3.5 py-2 rounded-lg font-bold hover:bg-primary-hover active:scale-95 transition-all flex items-center justify-center gap-1.5 shadow-sm">
                         <i class="fa-solid fa-plus"></i> Tambah Petugas
                     </button>
                 </div>
@@ -306,7 +307,7 @@
                     <div class="overflow-x-auto">
                         <table class="w-full text-left border-collapse">
                             <thead>
-                                <tr class="bg-gray-50 border-b border-gray-100 text-xs text-gray-500 font-bold uppercase">
+                                <tr class="bg-gray-50 border-b border-gray-100 text-[10px] md:text-xs text-gray-500 font-bold uppercase">
                                     <th class="p-3">ID</th>
                                     <th class="p-3">Nama Petugas</th>
                                     <th class="p-3">Lokasi Kerja</th>
@@ -315,7 +316,7 @@
                                     <th class="p-3 text-center">Aksi</th>
                                 </tr>
                             </thead>
-                            <tbody id="admin-table-petugas-body" class="text-sm divide-y divide-gray-100">
+                            <tbody id="admin-table-petugas-body" class="text-xs md:text-sm divide-y divide-gray-100">
                                 <!-- JS Renders Rows -->
                             </tbody>
                         </table>
@@ -325,18 +326,18 @@
 
             <!-- ADMIN TAB 2: REKAP DAN CETAK LAPORAN -->
             <div id="admin-panel-rekap" class="hidden space-y-4">
-                <div class="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm space-y-4">
-                    <h3 class="text-md font-bold text-gray-900">Rekap Laporan Bulanan</h3>
+                <div class="bg-white p-5 md:p-6 rounded-2xl border border-gray-100 shadow-sm space-y-4">
+                    <h3 class="text-sm md:text-md font-bold text-gray-900">Rekap Laporan Bulanan</h3>
                     <div class="flex flex-col sm:flex-row gap-3">
                         <div class="flex-1">
-                            <label class="block text-xs font-bold uppercase tracking-wider text-gray-500 mb-1">Pilih Bulan</label>
-                            <input id="admin-rekap-month-input" type="month" class="w-full p-2 border border-gray-300 rounded-lg text-sm focus:ring-primary focus:border-primary">
+                            <label class="block text-[11px] font-bold uppercase tracking-wider text-gray-500 mb-1.5">Pilih Bulan</label>
+                            <input id="admin-rekap-month-input" type="month" class="w-full p-2.5 border border-gray-300 rounded-lg text-sm focus:ring-primary focus:border-primary">
                         </div>
-                        <div class="flex items-end gap-2">
-                            <button onclick="loadAdminRekapData()" class="bg-primary text-white text-sm px-4 py-2 rounded-lg font-bold hover:bg-primary-hover transition h-10 flex items-center gap-1.5">
+                        <div class="flex items-end gap-2 w-full sm:w-auto">
+                            <button onclick="loadAdminRekapData()" class="flex-1 sm:flex-initial bg-primary text-white text-xs px-4 py-2.5 rounded-lg font-bold hover:bg-primary-hover active:scale-95 transition-all h-10 flex items-center justify-center gap-1.5 shadow-sm">
                                 <i class="fa-solid fa-magnifying-glass"></i> Tampilkan
                             </button>
-                            <button onclick="printLaporanAbsensi()" class="bg-accent text-primary text-sm px-4 py-2 rounded-lg font-bold hover:bg-yellow-400 transition h-10 flex items-center gap-1.5">
+                            <button onclick="printLaporanAbsensi()" class="flex-1 sm:flex-initial bg-accent text-primary text-xs px-4 py-2.5 rounded-lg font-bold hover:bg-yellow-400 active:scale-95 transition-all h-10 flex items-center justify-center gap-1.5 shadow-sm">
                                 <i class="fa-solid fa-print"></i> Cetak Laporan
                             </button>
                         </div>
@@ -347,7 +348,7 @@
                     <div class="overflow-x-auto">
                         <table class="w-full text-left border-collapse" id="table-rekap-cetak">
                             <thead>
-                                <tr class="bg-gray-50 border-b border-gray-100 text-xs text-gray-500 font-bold uppercase">
+                                <tr class="bg-gray-50 border-b border-gray-100 text-[10px] md:text-xs text-gray-500 font-bold uppercase">
                                     <th class="p-3">Nama Petugas</th>
                                     <th class="p-3">Lokasi Kerja</th>
                                     <th class="p-3 text-center">Tepat Waktu</th>
@@ -356,7 +357,7 @@
                                     <th class="p-3 text-center">Persentase</th>
                                 </tr>
                             </thead>
-                            <tbody id="admin-table-rekap-body" class="text-sm divide-y divide-gray-100">
+                            <tbody id="admin-table-rekap-body" class="text-xs md:text-sm divide-y divide-gray-100">
                                 <tr>
                                     <td colspan="6" class="p-4 text-center text-gray-400 text-xs">Pilih bulan dan klik tampilkan untuk memuat data.</td>
                                 </tr>
@@ -369,37 +370,37 @@
             <!-- ADMIN TAB 3: SETTING PENGUMUMAN & RUNNING TEXT -->
             <div id="admin-panel-pengumuman" class="hidden space-y-6">
                 <!-- Running Text Settings Card -->
-                <div class="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm space-y-4">
+                <div class="bg-white p-5 md:p-6 rounded-2xl border border-gray-100 shadow-sm space-y-4">
                     <div class="flex items-center gap-2 border-b pb-2">
                         <i class="fa-solid fa-bullhorn text-amber-500 text-lg animate-bounce"></i>
-                        <h3 class="text-md font-bold text-gray-900">Pengaturan Teks Berjalan (Running Text)</h3>
+                        <h3 class="text-sm md:text-md font-bold text-gray-900">Pengaturan Teks Berjalan (Running Text)</h3>
                     </div>
                     <p class="text-xs text-gray-500">Teks berjalan ini akan ditampilkan tepat di atas kotak portal absensi untuk memberikan instruksi umum harian kepada seluruh petugas sebelum login.</p>
                     <div class="space-y-3">
                         <input id="admin-input-running-text" type="text" class="w-full p-2.5 border border-gray-300 rounded-lg text-sm focus:ring-primary focus:border-primary placeholder-gray-400" placeholder="Ketik teks pengumuman berjalan disini...">
-                        <button onclick="saveRunningTextSubmit()" class="bg-accent text-primary text-xs px-4 py-2 rounded-lg font-bold hover:bg-yellow-400 transition flex items-center gap-1.5 ml-auto shadow">
+                        <button onclick="saveRunningTextSubmit()" class="bg-accent text-primary text-xs px-4 py-2 rounded-lg font-bold hover:bg-yellow-400 transition-all flex items-center gap-1.5 ml-auto shadow-sm">
                             <i class="fa-solid fa-floppy-disk"></i> Simpan Teks Berjalan
                         </button>
                     </div>
                 </div>
 
                 <!-- Static Announcement Card -->
-                <div class="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm space-y-4">
+                <div class="bg-white p-5 md:p-6 rounded-2xl border border-gray-100 shadow-sm space-y-4">
                     <div class="flex items-center gap-2 border-b pb-2">
                         <i class="fa-solid fa-thumbtack text-emerald-600 text-lg"></i>
-                        <h3 class="text-md font-bold text-gray-900">Buat Pengumuman Papan Informasi (Dashboard)</h3>
+                        <h3 class="text-sm md:text-md font-bold text-gray-900">Buat Pengumuman Papan Informasi (Dashboard)</h3>
                     </div>
                     <p class="text-xs text-gray-500">Pesan statis berdurasi lama yang diletakkan di dalam halaman dashboard utama masing-masing akun petugas.</p>
                     <div class="space-y-3">
                         <textarea id="admin-input-pengumuman" rows="3" class="w-full p-3 border border-gray-300 rounded-lg text-sm focus:ring-primary focus:border-primary placeholder-gray-400" placeholder="Ketik pengumuman penting..."></textarea>
-                        <button onclick="saveAnnouncementSubmit()" class="bg-primary text-white text-xs px-4 py-2 rounded-lg font-bold hover:bg-primary-hover transition flex items-center gap-1.5 ml-auto shadow">
+                        <button onclick="saveAnnouncementSubmit()" class="bg-primary text-white text-xs px-4 py-2 rounded-lg font-bold hover:bg-primary-hover transition-all flex items-center gap-1.5 ml-auto shadow-sm">
                             <i class="fa-solid fa-paper-plane"></i> Sebarkan Pengumuman
                         </button>
                     </div>
                 </div>
 
-                <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 space-y-3">
-                    <h3 class="text-md font-bold text-gray-900">Arsip Pengumuman Aktif</h3>
+                <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 md:p-6 space-y-3">
+                    <h3 class="text-sm md:text-md font-bold text-gray-900">Arsip Pengumuman Aktif</h3>
                     <div id="admin-list-pengumuman" class="space-y-2 divide-y divide-gray-100">
                         <!-- JS Renders List -->
                         <p class="text-xs text-gray-400">Belum ada pengumuman.</p>
@@ -409,8 +410,8 @@
 
             <!-- ADMIN TAB 4: API CONFIG -->
             <div id="admin-panel-config" class="hidden space-y-4">
-                <div class="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm space-y-3">
-                    <h3 class="text-md font-bold text-gray-900 flex items-center gap-2">
+                <div class="bg-white p-5 md:p-6 rounded-2xl border border-gray-100 shadow-sm space-y-3">
+                    <h3 class="text-sm md:text-md font-bold text-gray-900 flex items-center gap-2">
                         <i class="fa-solid fa-gears color-primary"></i>
                         <span>Konfigurasi Integrasi Google Apps Script</span>
                     </h3>
@@ -419,9 +420,9 @@
                         <label class="block text-xs font-bold uppercase text-gray-500">Google Apps Script Web App URL</label>
                         <input id="admin-config-url-input" type="text" class="w-full p-2.5 border border-gray-300 rounded-lg text-sm font-mono" placeholder="https://script.google.com/macros/s/.../exec">
                     </div>
-                    <div class="flex gap-2 justify-end pt-2">
-                        <button onclick="testConnection()" class="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg text-xs font-bold hover:bg-gray-100 transition">Test Koneksi</button>
-                        <button onclick="saveApiUrl()" class="bg-primary text-white text-xs px-4 py-2 rounded-lg font-bold hover:bg-primary-hover transition">Simpan & Integrasikan</button>
+                    <div class="flex gap-2 justify-end pt-2 flex-col sm:flex-row">
+                        <button onclick="testConnection()" class="w-full sm:w-auto px-4 py-2.5 border border-gray-300 text-gray-700 rounded-lg text-xs font-bold hover:bg-gray-100 transition-all">Test Koneksi</button>
+                        <button onclick="saveApiUrl()" class="w-full sm:w-auto bg-primary text-white text-xs px-4 py-2.5 rounded-lg font-bold hover:bg-primary-hover transition-all shadow-sm">Simpan & Integrasikan</button>
                     </div>
                 </div>
             </div>
@@ -430,78 +431,82 @@
         <!-- VIEW 4: DISPLAY MONITOR REAL-TIME -->
         <section id="view-display-monitor" class="hidden space-y-6">
             <!-- Header Monitor -->
-            <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex flex-col md:flex-row justify-between items-center gap-4">
-                <div class="text-center md:text-left">
-                    <h2 class="text-xl font-black text-gray-900 tracking-wide flex items-center justify-center md:justify-start gap-2">
-                        <span class="inline-block w-3 h-3 rounded-full bg-red-600 animate-ping"></span>
-                        <span>DISPLAY REAL-TIME MONITOR ABSENSI</span>
-                    </h2>
-                    <p class="text-xs text-gray-500" id="monitor-tanggal-hari-ini">Hari Ini: ...</p>
+            <div class="bg-white p-5 md:p-6 rounded-2xl shadow-sm border border-gray-100 flex flex-col lg:flex-row justify-between items-center gap-4">
+                <div class="text-center lg:text-left flex flex-col lg:flex-row items-center lg:space-x-4">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/a/af/Lambang_UIN_Ar-Raniry.png/960px-Lambang_UIN_Ar-Raniry.png" 
+                         alt="Logo UIN Ar-Raniry" 
+                         class="w-12 h-12 object-contain mb-2 lg:mb-0"
+                         onerror="this.onerror=null; this.src='https://raw.githubusercontent.com/Ar-Raniry-Assets/logo/main/logo.png';">
+                    <div>
+                        <h2 class="text-md md:text-xl font-black text-gray-900 tracking-wide flex items-center justify-center lg:justify-start gap-2">
+                            <span class="inline-block w-2.5 h-2.5 rounded-full bg-red-600 animate-ping flex-shrink-0"></span>
+                            <span>MONITOR ABSENSI REAL-TIME</span>
+                        </h2>
+                        <p class="text-xs text-gray-500 mt-1" id="monitor-tanggal-hari-ini">Hari Ini: ...</p>
+                    </div>
                 </div>
-                <div class="flex gap-2">
-                    <button onclick="loadDisplayMonitorData()" class="bg-gray-100 text-gray-700 p-2.5 rounded-lg text-xs font-bold hover:bg-gray-200 transition">
-                        <i class="fa-solid fa-arrows-rotate"></i> Refresh Data
+                <div class="flex gap-2 w-full lg:w-auto">
+                    <button onclick="loadDisplayMonitorData()" class="flex-1 lg:flex-initial bg-gray-100 text-gray-700 p-2.5 rounded-lg text-xs font-bold hover:bg-gray-200 transition-all flex items-center justify-center gap-1.5">
+                        <i class="fa-solid fa-arrows-rotate"></i> Refresh
                     </button>
-                    <button id="btn-back-from-monitor" onclick="backFromMonitor()" class="bg-primary text-white px-4 py-2.5 rounded-lg text-xs font-bold hover:bg-primary-hover transition flex items-center gap-1">
-                        <i class="fa-solid fa-house"></i> Kembali ke Portal
+                    <button id="btn-back-from-monitor" onclick="backFromMonitor()" class="flex-1 lg:flex-initial bg-primary text-white px-4 py-2.5 rounded-lg text-xs font-bold hover:bg-primary-hover transition-all flex items-center justify-center gap-1.5 shadow-sm">
+                        <i class="fa-solid fa-house"></i> Kembali
                     </button>
                 </div>
             </div>
 
-            <!-- Panel Statistik Ringkas -->
-            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
+            <!-- Panel Statistik Ringkas (Responsive Grid) -->
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4 text-center">
                 <div class="bg-white p-4 rounded-xl shadow-sm border-b-4 border-emerald-500">
-                    <p class="text-xs font-bold text-gray-400 uppercase tracking-wider">Hadir Tepat Waktu</p>
-                    <p class="text-3xl font-extrabold text-emerald-600 mt-1" id="stat-tepat-waktu">0</p>
+                    <p class="text-[10px] md:text-xs font-bold text-gray-400 uppercase tracking-wider">Hadir Tepat Waktu</p>
+                    <p class="text-2xl md:text-3xl font-extrabold text-emerald-600 mt-1" id="stat-tepat-waktu">0</p>
                 </div>
                 <div class="bg-white p-4 rounded-xl shadow-sm border-b-4 border-amber-500">
-                    <p class="text-xs font-bold text-gray-400 uppercase tracking-wider">Hadir Terlambat</p>
-                    <p class="text-3xl font-extrabold text-amber-600 mt-1" id="stat-terlambat">0</p>
+                    <p class="text-[10px] md:text-xs font-bold text-gray-400 uppercase tracking-wider">Hadir Terlambat</p>
+                    <p class="text-2xl md:text-3xl font-extrabold text-amber-600 mt-1" id="stat-terlambat">0</p>
                 </div>
                 <div class="bg-white p-4 rounded-xl shadow-sm border-b-4 border-gray-400">
-                    <p class="text-xs font-bold text-gray-400 uppercase tracking-wider">Belum Absensi</p>
-                    <p class="text-3xl font-extrabold text-gray-500 mt-1" id="stat-belum-hadir">0</p>
+                    <p class="text-[10px] md:text-xs font-bold text-gray-400 uppercase tracking-wider">Belum Absensi</p>
+                    <p class="text-2xl md:text-3xl font-extrabold text-gray-500 mt-1" id="stat-belum-hadir">0</p>
                 </div>
                 <div class="bg-white p-4 rounded-xl shadow-sm border-b-4 border-primary">
-                    <p class="text-xs font-bold text-gray-400 uppercase tracking-wider">Total Petugas</p>
-                    <p class="text-3xl font-extrabold color-primary mt-1" id="stat-total-petugas">0</p>
+                    <p class="text-[10px] md:text-xs font-bold text-gray-400 uppercase tracking-wider">Total Petugas</p>
+                    <p class="text-2xl md:text-3xl font-extrabold color-primary mt-1" id="stat-total-petugas">0</p>
                 </div>
             </div>
 
-            <!-- Layout 2 Kolom Monitor -->
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <!-- Kolom 1: Sudah Hadir (Datang Tepat Waktu / Terlambat) -->
-                <div class="bg-white p-6 rounded-2xl shadow-sm border border-emerald-100 flex flex-col space-y-4">
+            <!-- Layout 2 Kolom Monitor (Side-by-Side on large, Stacked on mobile) -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
+                <!-- Kolom 1: Sudah Hadir -->
+                <div class="bg-white p-4 md:p-6 rounded-2xl shadow-sm border border-emerald-100 flex flex-col space-y-4">
                     <div class="border-b pb-3 flex justify-between items-center">
-                        <h3 class="font-extrabold text-gray-900 flex items-center gap-2 text-emerald-700">
+                        <h3 class="font-extrabold text-sm md:text-base flex items-center gap-2 text-emerald-700">
                             <i class="fa-solid fa-circle-check"></i>
                             <span>PETUGAS HADIR HARI INI</span>
                         </h3>
-                        <span id="badge-hadir-count" class="bg-emerald-100 text-emerald-800 text-xs font-bold px-2.5 py-1 rounded-full">0 Orang</span>
+                        <span id="badge-hadir-count" class="bg-emerald-100 text-emerald-800 text-[10px] md:text-xs font-bold px-2.5 py-1 rounded-full">0 Orang</span>
                     </div>
-                    <!-- Autoscrolling Container (Hidden scrollbar) -->
-                    <div class="h-[400px] overflow-hidden relative border border-gray-50 rounded-xl p-1 bg-gray-50/30">
+                    <!-- Autoscrolling Container -->
+                    <div class="h-[350px] md:h-[450px] overflow-hidden relative border border-gray-50 rounded-xl p-1 bg-gray-50/30">
                         <div class="h-full overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] space-y-2.5" id="monitor-container-hadir">
-                            <!-- JS Renders Items -->
-                            <p class="text-sm text-gray-400 text-center py-6">Belum ada petugas yang melakukan absensi hari ini.</p>
+                            <p class="text-xs md:text-sm text-gray-400 text-center py-6">Belum ada petugas yang melakukan absensi hari ini.</p>
                         </div>
                     </div>
                 </div>
 
                 <!-- Kolom 2: Belum Absensi -->
-                <div class="bg-white p-6 rounded-2xl shadow-sm border border-red-100 flex flex-col space-y-4">
+                <div class="bg-white p-4 md:p-6 rounded-2xl shadow-sm border border-red-100 flex flex-col space-y-4">
                     <div class="border-b pb-3 flex justify-between items-center">
-                        <h3 class="font-extrabold text-gray-900 flex items-center gap-2 text-red-700">
+                        <h3 class="font-extrabold text-sm md:text-base flex items-center gap-2 text-red-700">
                             <i class="fa-solid fa-circle-xmark"></i>
                             <span>BELUM HADIR / ALFABETIS</span>
                         </h3>
-                        <span id="badge-belum-count" class="bg-red-100 text-red-800 text-xs font-bold px-2.5 py-1 rounded-full">0 Orang</span>
+                        <span id="badge-belum-count" class="bg-red-100 text-red-800 text-[10px] md:text-xs font-bold px-2.5 py-1 rounded-full">0 Orang</span>
                     </div>
-                    <!-- Autoscrolling Container (Hidden scrollbar) -->
-                    <div class="h-[400px] overflow-hidden relative border border-gray-50 rounded-xl p-1 bg-gray-50/30">
+                    <!-- Autoscrolling Container -->
+                    <div class="h-[350px] md:h-[450px] overflow-hidden relative border border-gray-50 rounded-xl p-1 bg-gray-50/30">
                         <div class="h-full overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] space-y-2.5" id="monitor-container-belum-hadir">
-                            <!-- JS Renders Items -->
-                            <p class="text-sm text-gray-400 text-center py-6">Semua petugas telah hadir.</p>
+                            <p class="text-xs md:text-sm text-gray-400 text-center py-6">Semua petugas telah hadir.</p>
                         </div>
                     </div>
                 </div>
@@ -510,16 +515,16 @@
     </main>
 
     <!-- FOOTER -->
-    <footer class="bg-gray-800 text-gray-400 text-center py-6 border-t border-gray-700 text-xs space-y-2 mt-auto">
-        <p>&copy; 2026 Universitas Islam Negeri Ar-Raniry Banda Aceh. All Rights Reserved.</p>
-        <p class="text-gray-500">Sistem Informasi Manajemen Kebersihan Kampus | Dikembangkan sesuai Standar Keamanan & Responsif Android</p>
+    <footer class="bg-gray-800 text-gray-400 text-center py-5 md:py-6 border-t border-gray-700 text-[10px] md:text-xs space-y-2 mt-auto">
+        <p class="px-2">&copy; 2026 Universitas Islam Negeri Ar-Raniry Banda Aceh. All Rights Reserved.</p>
+        <p class="text-gray-500 px-2">Sistem Informasi Absensi Petugas Kebersihan | Kompatibel PC, Tablet, & Android</p>
     </footer>
 
     <!-- MODAL POPUP: FORM PETUGAS (CREATE & UPDATE) -->
-    <div id="modal-petugas" class="hidden fixed inset-0 z-50 overflow-y-auto bg-black bg-opacity-50 flex items-center justify-center p-4">
+    <div id="modal-petugas" class="hidden fixed inset-0 z-50 overflow-y-auto bg-black bg-opacity-50 flex items-center justify-center p-3">
         <div class="bg-white rounded-2xl max-w-md w-full shadow-2xl overflow-hidden border border-gray-100">
             <div class="bg-primary text-white p-4 flex justify-between items-center">
-                <h3 id="modal-petugas-title" class="font-bold">Tambah / Edit Petugas</h3>
+                <h3 id="modal-petugas-title" class="font-bold text-sm md:text-base">Tambah / Edit Petugas</h3>
                 <button onclick="closeFormPetugasModal()" class="text-white hover:text-gray-200">
                     <i class="fa-solid fa-xmark text-lg"></i>
                 </button>
@@ -530,19 +535,19 @@
                 
                 <div>
                     <label class="block text-xs font-bold uppercase text-gray-500 mb-1">Nama Lengkap</label>
-                    <input type="text" id="form-petugas-nama" required class="w-full p-2 border border-gray-300 rounded-lg text-sm">
+                    <input type="text" id="form-petugas-nama" required class="w-full p-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
                 </div>
                 <div>
                     <label class="block text-xs font-bold uppercase text-gray-500 mb-1">Username Akun</label>
-                    <input type="text" id="form-petugas-username" required class="w-full p-2 border border-gray-300 rounded-lg text-sm">
+                    <input type="text" id="form-petugas-username" required class="w-full p-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
                 </div>
                 <div>
                     <label class="block text-xs font-bold uppercase text-gray-500 mb-1">Password</label>
-                    <input type="text" id="form-petugas-password" required class="w-full p-2 border border-gray-300 rounded-lg text-sm">
+                    <input type="text" id="form-petugas-password" required class="w-full p-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
                 </div>
                 <div>
                     <label class="block text-xs font-bold uppercase text-gray-500 mb-1">Lokasi Penempatan Kerja</label>
-                    <select id="form-petugas-lokasi" required class="w-full p-2 border border-gray-300 rounded-lg text-sm bg-white">
+                    <select id="form-petugas-lokasi" required class="w-full p-2.5 border border-gray-300 rounded-lg text-sm bg-white focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
                         <option value="Gedung Rektorat">Gedung Rektorat</option>
                         <option value="Gedung FEBI">Gedung FEBI</option>
                         <option value="Gedung Pascasarjana">Gedung Pascasarjana</option>
@@ -553,12 +558,12 @@
                 </div>
                 <div>
                     <label class="block text-xs font-bold uppercase text-gray-500 mb-1">No. WhatsApp / HP</label>
-                    <input type="text" id="form-petugas-telepon" required class="w-full p-2 border border-gray-300 rounded-lg text-sm" placeholder="Contoh: 08123456789">
+                    <input type="text" id="form-petugas-telepon" required class="w-full p-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent" placeholder="Contoh: 08123456789">
                 </div>
 
                 <div class="flex justify-end gap-2 pt-2">
-                    <button type="button" onclick="closeFormPetugasModal()" class="px-4 py-2 border rounded-lg text-xs text-gray-600 hover:bg-gray-100">Batal</button>
-                    <button type="submit" class="bg-primary text-white text-xs px-4 py-2 rounded-lg font-bold hover:bg-primary-hover">Simpan Data</button>
+                    <button type="button" onclick="closeFormPetugasModal()" class="px-4 py-2 border rounded-lg text-xs text-gray-600 hover:bg-gray-100 transition-colors">Batal</button>
+                    <button type="submit" class="bg-primary text-white text-xs px-4 py-2 rounded-lg font-bold hover:bg-primary-hover transition-all">Simpan Data</button>
                 </div>
             </form>
         </div>
@@ -684,7 +689,7 @@
             const badge = document.getElementById("connection-badge");
             const text = document.getElementById("connection-text");
             if (live) {
-                badge.className = "px-3 py-1 text-xs rounded-full bg-emerald-600 text-white font-semibold shadow flex items-center gap-1.5";
+                badge.className = "px-3 py-1 text-xs rounded-full bg-emerald-600 text-white font-semibold shadow flex items-center gap-1.5 animate-bounce";
                 text.textContent = "Koneksi Live Google Sheets";
             } else {
                 badge.className = "px-3 py-1 text-xs rounded-full bg-yellow-500 text-black font-semibold shadow flex items-center gap-1.5";
@@ -715,7 +720,7 @@
         function showAlert(message, type = "success") {
             const container = document.getElementById("alert-container");
             container.className = `p-4 mb-4 rounded-xl text-xs font-bold shadow-md flex items-center gap-2 ${
-                type === "success" ? "bg-emerald-100 text-emerald-800" : "bg-red-100 text-red-800"
+                type === "success" ? "bg-emerald-100 text-emerald-800 animate-slide-in" : "bg-red-100 text-red-800 animate-slide-in"
             }`;
             container.innerHTML = `
                 <i class="fa-solid ${type === 'success' ? 'fa-circle-check' : 'fa-triangle-exclamation'} text-sm"></i>
@@ -764,11 +769,11 @@
             const btnAdmin = document.getElementById("tab-login-admin");
             
             if (role === "petugas") {
-                btnPetugas.className = "flex-1 py-2 text-center text-sm font-semibold rounded-md bg-white text-primary shadow-sm transition";
-                btnAdmin.className = "flex-1 py-2 text-center text-sm font-semibold rounded-md text-gray-500 hover:text-gray-700 transition";
+                btnPetugas.className = "flex-1 py-2.5 text-center text-xs md:text-sm font-bold rounded-lg bg-white text-primary shadow-sm transition-all";
+                btnAdmin.className = "flex-1 py-2.5 text-center text-xs md:text-sm font-bold rounded-lg text-gray-500 hover:text-gray-700 transition-all";
             } else {
-                btnAdmin.className = "flex-1 py-2 text-center text-sm font-semibold rounded-md bg-white text-primary shadow-sm transition";
-                btnPetugas.className = "flex-1 py-2 text-center text-sm font-semibold rounded-md text-gray-500 hover:text-gray-700 transition";
+                btnAdmin.className = "flex-1 py-2.5 text-center text-xs md:text-sm font-bold rounded-lg bg-white text-primary shadow-sm transition-all";
+                btnPetugas.className = "flex-1 py-2.5 text-center text-xs md:text-sm font-bold rounded-lg text-gray-500 hover:text-gray-700 transition-all";
             }
         }
 
@@ -932,15 +937,15 @@
 
             if (statusHariIni.datang) {
                 clockInEl.textContent = displayDatang;
-                clockInEl.className = "text-3xl font-extrabold text-emerald-600";
+                clockInEl.className = "text-2xl md:text-3xl font-extrabold text-emerald-600";
                 btnDatang.disabled = true;
-                btnDatang.className = "w-full bg-emerald-100 text-emerald-700 py-3 rounded-xl font-bold cursor-not-allowed transition flex items-center justify-center gap-2";
+                btnDatang.className = "w-full bg-emerald-100 text-emerald-700 py-3 rounded-xl font-bold cursor-not-allowed transition-all flex items-center justify-center gap-2";
                 btnDatang.innerHTML = `<i class="fa-solid fa-circle-check"></i> Sudah Absen Masuk`;
             } else {
                 clockInEl.textContent = "- - : - -";
-                clockInEl.className = "text-3xl font-extrabold text-gray-400";
+                clockInEl.className = "text-2xl md:text-3xl font-extrabold text-gray-400";
                 btnDatang.disabled = false;
-                btnDatang.className = "w-full bg-primary text-white py-3 rounded-xl font-bold shadow-md bg-primary-hover transition flex items-center justify-center gap-2";
+                btnDatang.className = "w-full bg-primary text-white py-3 rounded-xl font-bold shadow-md bg-primary-hover transition-all flex items-center justify-center gap-2";
                 btnDatang.innerHTML = `<i class="fa-solid fa-right-to-bracket"></i> Absen Datang Sekarang`;
             }
 
@@ -950,22 +955,22 @@
             if (statusHariIni.datang) {
                 if (statusHariIni.pulang) {
                     clockOutEl.textContent = displayPulang;
-                    clockOutEl.className = "text-3xl font-extrabold text-emerald-600";
+                    clockOutEl.className = "text-2xl md:text-3xl font-extrabold text-emerald-600";
                     btnPulang.disabled = true;
-                    btnPulang.className = "w-full bg-emerald-100 text-emerald-700 py-3 rounded-xl font-bold cursor-not-allowed transition flex items-center justify-center gap-2";
+                    btnPulang.className = "w-full bg-emerald-100 text-emerald-700 py-3 rounded-xl font-bold cursor-not-allowed transition-all flex items-center justify-center gap-2";
                     btnPulang.innerHTML = `<i class="fa-solid fa-circle-check"></i> Sudah Absen Pulang`;
                 } else {
                     clockOutEl.textContent = "- - : - -";
-                    clockOutEl.className = "text-3xl font-extrabold text-gray-400";
+                    clockOutEl.className = "text-2xl md:text-3xl font-extrabold text-gray-400";
                     btnPulang.disabled = false;
-                    btnPulang.className = "w-full bg-orange-600 text-white py-3 rounded-xl font-bold shadow-md hover:bg-orange-700 transition flex items-center justify-center gap-2";
+                    btnPulang.className = "w-full bg-orange-600 text-white py-3 rounded-xl font-bold shadow-md hover:bg-orange-700 transition-all flex items-center justify-center gap-2";
                     btnPulang.innerHTML = `<i class="fa-solid fa-right-from-bracket"></i> Absen Pulang Sekarang`;
                 }
             } else {
                 clockOutEl.textContent = "- - : - -";
-                clockOutEl.className = "text-3xl font-extrabold text-gray-400";
+                clockOutEl.className = "text-2xl md:text-3xl font-extrabold text-gray-400";
                 btnPulang.disabled = true;
-                btnPulang.className = "w-full bg-gray-200 text-gray-400 py-3 rounded-xl font-bold cursor-not-allowed transition flex items-center justify-center gap-2";
+                btnPulang.className = "w-full bg-gray-200 text-gray-400 py-3 rounded-xl font-bold cursor-not-allowed transition-all flex items-center justify-center gap-2";
                 btnPulang.innerHTML = `<i class="fa-solid fa-lock"></i> Absen Datang Dahulu`;
             }
 
@@ -977,12 +982,12 @@
                 riwayat.forEach(row => {
                     const badgeClass = row.status === "Tepat Waktu" ? "bg-emerald-100 text-emerald-800" : "bg-amber-100 text-amber-800";
                     tbody.innerHTML += `
-                        <tr class="hover:bg-gray-50 transition">
+                        <tr class="hover:bg-gray-50 transition-colors">
                             <td class="p-3 font-semibold text-xs text-gray-600">${formatDateIndo(row.tanggal)}</td>
                             <td class="p-3 text-xs text-gray-700">${formatTimeClean(row.jam_datang) || '-'}</td>
                             <td class="p-3 text-xs text-gray-700">${formatTimeClean(row.jam_pulang) || '-'}</td>
-                            <td class="p-3">
-                                <span class="px-2 py-1 text-[10px] font-extrabold rounded-full ${badgeClass}">${row.status}</span>
+                            <td class="p-3 text-center">
+                                <span class="px-2 py-0.5 text-[9px] md:text-[10px] font-extrabold rounded-full ${badgeClass}">${row.status}</span>
                             </td>
                         </tr>
                     `;
@@ -1077,11 +1082,11 @@
         function setAdminTab(tabName) {
             const tabs = ["petugas", "rekap", "pengumuman", "config"];
             tabs.forEach(t => {
-                document.getElementById(`tab-admin-${t}`).className = "flex-1 py-2.5 text-center text-xs font-bold rounded-lg text-gray-500 hover:text-gray-700 transition";
+                document.getElementById(`tab-admin-${t}`).className = "py-2.5 text-center text-[11px] md:text-xs font-extrabold rounded-lg text-gray-500 hover:text-gray-700 transition-all";
                 document.getElementById(`admin-panel-${t}`).classList.add("hidden");
             });
 
-            document.getElementById(`tab-admin-${tabName}`).className = "flex-1 py-2.5 text-center text-xs font-bold rounded-lg bg-white text-primary shadow-sm transition";
+            document.getElementById(`tab-admin-${tabName}`).className = "py-2.5 text-center text-[11px] md:text-xs font-extrabold rounded-lg bg-white text-primary shadow-sm transition-all";
             document.getElementById(`admin-panel-${tabName}`).classList.remove("hidden");
 
             if (tabName === "petugas") {
@@ -1096,7 +1101,7 @@
 
         async function loadAdminStaffData() {
             const tbody = document.getElementById("admin-table-petugas-body");
-            tbody.innerHTML = `<tr><td colspan="6" class="p-4 text-center"><i class="fa-solid fa-spinner animate-spin"></i> Memuat data petugas...</td></tr>`;
+            tbody.innerHTML = `<tr><td colspan="6" class="p-4 text-center text-xs"><i class="fa-solid fa-spinner animate-spin"></i> Memuat data petugas...</td></tr>`;
 
             let staffList = [];
             if (isLiveMode) {
@@ -1112,17 +1117,17 @@
 
             tbody.innerHTML = "";
             if (staffList.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="6" class="p-4 text-center text-gray-400">Belum ada petugas terdaftar.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="6" class="p-4 text-center text-gray-400 text-xs">Belum ada petugas terdaftar.</td></tr>`;
             } else {
                 staffList.forEach(p => {
                     tbody.innerHTML += `
-                        <tr class="hover:bg-gray-50 transition">
+                        <tr class="hover:bg-gray-50 transition-colors">
                             <td class="p-3 font-bold text-xs text-primary">${p.id_petugas}</td>
                             <td class="p-3 font-semibold text-xs text-gray-800">${p.nama}</td>
                             <td class="p-3 text-xs text-gray-600"><span class="px-2 py-0.5 bg-gray-100 rounded">${p.lokasi_kerja}</span></td>
                             <td class="p-3 text-xs text-gray-600">${p.telepon}</td>
                             <td class="p-3 text-xs font-mono text-gray-500">${p.username} / ${p.password}</td>
-                            <td class="p-3 text-center space-x-1">
+                            <td class="p-3 text-center space-x-2">
                                 <button onclick="openFormPetugasModal('update', '${p.id_petugas}', '${p.nama}', '${p.username}', '${p.password}', '${p.lokasi_kerja}', '${p.telepon}')" class="text-blue-600 hover:text-blue-800 p-1 text-xs font-semibold" title="Edit Profil"><i class="fa-regular fa-pen-to-square"></i> Edit</button>
                                 <button onclick="deletePetugasSubmit('${p.id_petugas}')" class="text-red-600 hover:text-red-800 p-1 text-xs font-semibold" title="Hapus"><i class="fa-regular fa-trash-can"></i> Hapus</button>
                             </td>
@@ -1256,7 +1261,7 @@
             }
 
             const tbody = document.getElementById("admin-table-rekap-body");
-            tbody.innerHTML = `<tr><td colspan="6" class="p-4 text-center"><i class="fa-solid fa-spinner animate-spin"></i> Menghitung rekap dari Sheets...</td></tr>`;
+            tbody.innerHTML = `<tr><td colspan="6" class="p-4 text-center text-xs"><i class="fa-solid fa-spinner animate-spin"></i> Menghitung rekap dari Sheets...</td></tr>`;
 
             let recapData = [];
             if (isLiveMode) {
@@ -1272,7 +1277,7 @@
 
             tbody.innerHTML = "";
             if (recapData.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="6" class="p-4 text-center text-gray-400">Tidak ada data absensi di bulan ini.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="6" class="p-4 text-center text-gray-400 text-xs">Tidak ada data absensi di bulan ini.</td></tr>`;
             } else {
                 recapData.forEach(r => {
                     const pct = r.total_kehadiran > 0 ? Math.round((r.tepat_waktu / r.total_kehadiran) * 100) : 0;
@@ -1281,7 +1286,7 @@
                     else if (pct >= 50) pctColor = "text-yellow-600";
 
                     tbody.innerHTML += `
-                        <tr class="hover:bg-gray-50 transition text-xs">
+                        <tr class="hover:bg-gray-50 transition-colors text-xs">
                             <td class="p-3 font-semibold text-gray-800">${r.nama}</td>
                             <td class="p-3 text-gray-500">${r.lokasi_kerja}</td>
                             <td class="p-3 text-center font-bold text-emerald-600">${r.tepat_waktu}</td>
@@ -1596,16 +1601,16 @@
                     const badgeClass = isTelat ? "bg-amber-100 text-amber-800" : "bg-emerald-100 text-emerald-800";
                     
                     htmlHadir += `
-                        <div class="bg-gray-50 hover:bg-emerald-50 border-l-4 ${isTelat ? 'border-amber-500' : 'border-emerald-600'} p-3.5 rounded-r-xl flex justify-between items-center transition shadow-sm select-none">
-                            <div>
-                                <h4 class="font-bold text-xs text-gray-800">${h.nama}</h4>
-                                <p class="text-[10px] text-gray-500 flex items-center gap-1 mt-0.5">
+                        <div class="bg-gray-50 hover:bg-emerald-50 border-l-4 ${isTelat ? 'border-amber-500' : 'border-emerald-600'} p-3 md:p-3.5 rounded-r-xl flex justify-between items-center transition-all shadow-sm select-none">
+                            <div class="min-w-0 flex-1 pr-2">
+                                <h4 class="font-bold text-xs text-gray-800 truncate">${h.nama}</h4>
+                                <p class="text-[10px] text-gray-500 flex items-center gap-1 mt-0.5 truncate">
                                     <i class="fa-solid fa-map-location-dot"></i> ${h.lokasi_kerja}
                                 </p>
                             </div>
-                            <div class="text-right flex flex-col items-end gap-1">
-                                <span class="text-[11px] font-extrabold px-2 py-0.5 rounded-full ${badgeClass}">${h.status}</span>
-                                <span class="text-[10px] text-gray-500 font-mono font-semibold">Datang: ${formatTimeClean(h.jam_datang)} ${h.jam_pulang ? '| Pulang: ' + formatTimeClean(h.jam_pulang) : ''}</span>
+                            <div class="text-right flex flex-col items-end gap-1 flex-shrink-0">
+                                <span class="text-[9px] md:text-[10px] font-extrabold px-2 py-0.5 rounded-full ${badgeClass}">${h.status}</span>
+                                <span class="text-[9px] md:text-[10px] text-gray-500 font-mono font-semibold">Datang: ${formatTimeClean(h.jam_datang)} ${h.jam_pulang ? '| Pulang: ' + formatTimeClean(h.jam_pulang) : ''}</span>
                             </div>
                         </div>
                     `;
@@ -1625,14 +1630,14 @@
             } else {
                 displayData.belum_hadir.forEach(b => {
                     htmlBelum += `
-                        <div class="bg-gray-50 p-3.5 rounded-xl border-l-4 border-red-500 flex justify-between items-center shadow-sm select-none">
-                            <div>
-                                <h4 class="font-bold text-xs text-gray-800">${b.nama}</h4>
-                                <p class="text-[10px] text-gray-500 flex items-center gap-1 mt-0.5">
+                        <div class="bg-gray-50 p-3 md:p-3.5 rounded-xl border-l-4 border-red-500 flex justify-between items-center shadow-sm select-none transition-all hover:bg-red-50">
+                            <div class="min-w-0 flex-1 pr-2">
+                                <h4 class="font-bold text-xs text-gray-800 truncate">${b.nama}</h4>
+                                <p class="text-[10px] text-gray-500 flex items-center gap-1 mt-0.5 truncate">
                                     <i class="fa-solid fa-map-location-dot"></i> ${b.lokasi_kerja}
                                 </p>
                             </div>
-                            <span class="text-[10px] font-extrabold bg-red-100 text-red-800 px-2 py-1 rounded-full uppercase tracking-wider">BELUM ABSEN</span>
+                            <span class="text-[9px] md:text-[10px] font-extrabold bg-red-100 text-red-800 px-2 py-1 rounded-full uppercase tracking-wider flex-shrink-0">BELUM ABSEN</span>
                         </div>
                     `;
                 });
