@@ -603,6 +603,24 @@
             { id: "ANN-1", tanggal: "2026-06-19", isi: "Diberitahukan kepada seluruh petugas kebersihan UIN Ar-Raniry agar bersiap melakukan gotong royong menyambut wisuda akbar esok hari." }
         ];
 
+        // Fungsi penyimpan basis data simulasi lokal ke localStorage
+        function saveToLocalDb() {
+            localStorage.setItem("db_petugas", JSON.stringify(MOCK_PETUGAS));
+            localStorage.setItem("db_absensi", JSON.stringify(MOCK_ABSENSI));
+            localStorage.setItem("db_pengumuman", JSON.stringify(MOCK_PENGUMUMAN));
+        }
+
+        // Fungsi pembaca basis data simulasi lokal dari localStorage
+        function loadFromLocalDb() {
+            try {
+                if (localStorage.getItem("db_petugas")) MOCK_PETUGAS = JSON.parse(localStorage.getItem("db_petugas"));
+                if (localStorage.getItem("db_absensi")) MOCK_ABSENSI = JSON.parse(localStorage.getItem("db_absensi"));
+                if (localStorage.getItem("db_pengumuman")) MOCK_PENGUMUMAN = JSON.parse(localStorage.getItem("db_pengumuman"));
+            } catch (e) {
+                console.error("Gagal mengurai localStorage lokal:", e);
+            }
+        }
+
         // Running Text Content
         let runningText = "Selamat Datang di Sistem Absensi Petugas Kebersihan UIN Ar-Raniry Banda Aceh. Silakan lakukan absensi datang tepat waktu!";
 
@@ -661,8 +679,8 @@
                 return;
             }
             try {
-                // Ambil konfigurasi API dari cloud Firestore agar otomatis tersinkronisasi di HP semua petugas
-                const configDocRef = doc(window.firebaseDb, 'artifacts', window.appId, 'public', 'data', 'api_settings');
+                // Ambil konfigurasi API dari cloud Firestore (6 Segmen genap yang valid sesuai aturan Firestore)
+                const configDocRef = doc(window.firebaseDb, 'artifacts', window.appId, 'public', 'data', 'api_settings', 'config');
                 const docSnap = await getDoc(configDocRef);
                 
                 if (docSnap.exists() && docSnap.data().url) {
@@ -903,8 +921,8 @@
                         showAlert(res.message || "Gagal masuk.", "error");
                     }
                 } catch (err) {
-                    showAlert("Kesalahan koneksi ke Google Sheets. Menggunakan database simulasi lokal...", "error");
-                    simulatedLogin(userIn, passIn);
+                    console.error("Gagal melakukan panggilan API:", err);
+                    showAlert("Gagal menghubungkan ke Google Sheets. Pastikan URL API benar, koneksi internet aktif, dan Apps Script dideploy sebagai 'Anyone'.", "error");
                 }
             } else {
                 simulatedLogin(userIn, passIn);
@@ -1459,9 +1477,10 @@
                 updateConnectionState(true);
 
                 // --- PROSES UPLOAD CONFIG API KE CLOUD FIRESTORE ---
+                // Menyimpan ke Cloud di segment genap yang valid (api_settings/config) agar semua HP langsung terhubung otomatis
                 if (window.firebaseDb && window.firebaseUser) {
                     try {
-                        const configDocRef = doc(window.firebaseDb, 'artifacts', window.appId, 'public', 'data', 'api_settings');
+                        const configDocRef = doc(window.firebaseDb, 'artifacts', window.appId, 'public', 'data', 'api_settings', 'config');
                         await setDoc(configDocRef, { url: urlInput }, { merge: true });
                         showAlert("URL API tersimpan di Cloud! Seluruh HP Android petugas kini otomatis LIVE.", "success");
                     } catch (err) {
@@ -1599,6 +1618,47 @@
             loadAdminAnnouncements();
         }
 
+        // Inisialisasi pergerakan autoscroll keatas (slow & smooth auto-marquee)
+        function initAutoScroll(containerId) {
+            const el = document.getElementById(containerId);
+            if (!el) return;
+            
+            // Hentikan interval lama jika ada
+            if (el.scrollTimer) {
+                clearInterval(el.scrollTimer);
+            }
+            
+            // Jika konten tidak melebihi tinggi layar display, tidak perlu scroll
+            if (el.scrollHeight <= el.clientHeight) {
+                return; 
+            }
+            
+            el.dataset.paused = "false";
+            
+            // Pasang event listener hover & touch untuk PAUSE otomatis
+            if (!el.dataset.eventsAttached) {
+                el.addEventListener('mouseenter', () => { el.dataset.paused = "true"; });
+                el.addEventListener('mouseleave', () => { el.dataset.paused = "false"; });
+                el.addEventListener('touchstart', () => { el.dataset.paused = "true"; }, {passive: true});
+                el.addEventListener('touchend', () => { el.dataset.paused = "false"; }, {passive: true});
+                el.dataset.eventsAttached = "true";
+            }
+            
+            // Menjalankan scroll pelan setinggi 1px secara berkala (35ms per step)
+            el.scrollTimer = setInterval(() => {
+                if (el.dataset.paused === "true") return;
+                
+                el.scrollTop += 1;
+                
+                // Ketika sudah melewati setengah konten (karena isinya kita duplikasi secara seamless)
+                // maka scroll ditarik kembali ke atas secara instan tanpa kelihatan melompat
+                const halfHeight = el.scrollHeight / 2;
+                if (el.scrollTop >= halfHeight) {
+                    el.scrollTop = 0;
+                }
+            }, 35);
+        }
+
         async function loadDisplayMonitorData() {
             const containerHadir = document.getElementById("monitor-container-hadir");
             const containerBelum = document.getElementById("monitor-container-belum-hadir");
@@ -1634,6 +1694,7 @@
             document.getElementById("badge-hadir-count").textContent = `${totalHadir} Orang`;
             document.getElementById("badge-belum-count").textContent = `${displayData.belum_hadir.length} Orang`;
 
+            // 1. Render kolom Hadir
             let htmlHadir = "";
             if (displayData.hadir.length === 0) {
                 htmlHadir = `<div class="p-6 text-center text-gray-400 text-xs">Belum ada petugas yang melakukan absensi hari ini.</div>`;
@@ -1659,10 +1720,13 @@
                     `;
                 });
                 
+                // Duplikasi konten agar marqee loop berjalan tanpa jeda kosong
                 containerHadir.innerHTML = `<div class="space-y-2.5 pb-2.5">${htmlHadir}</div><div class="space-y-2.5">${htmlHadir}</div>`;
+                // Aktifkan auto scroll
                 setTimeout(() => initAutoScroll("monitor-container-hadir"), 100);
             }
 
+            // 2. Render kolom Belum Hadir
             let htmlBelum = "";
             if (displayData.belum_hadir.length === 0) {
                 htmlBelum = `<div class="p-6 text-center text-emerald-600 font-bold text-xs"><i class="fa-solid fa-square-check"></i> Semua petugas kebersihan telah hadir bekerja!</div>`;
@@ -1682,7 +1746,9 @@
                     `;
                 });
                 
+                // Duplikasi konten agar marquee loop berjalan tanpa jeda kosong
                 containerBelum.innerHTML = `<div class="space-y-2.5 pb-2.5">${htmlBelum}</div><div class="space-y-2.5">${htmlBelum}</div>`;
+                // Aktifkan auto scroll
                 setTimeout(() => initAutoScroll("monitor-container-belum-hadir"), 100);
             }
         }
