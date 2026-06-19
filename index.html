@@ -69,8 +69,8 @@
             </div>
             <div class="flex items-center space-x-2 flex-wrap justify-center">
                 <span id="connection-badge" class="px-3 py-1 text-[11px] rounded-full bg-yellow-500 text-black font-extrabold shadow flex items-center gap-1.5 transition-all">
-                    <span class="w-2 h-2 rounded-full bg-white animate-pulse"></span>
-                    <span id="connection-text">Mode Simulasi (Demo)</span>
+                    <span id="connection-pulse" class="w-2 h-2 rounded-full bg-white animate-pulse"></span>
+                    <span id="connection-text">Menghubungkan...</span>
                 </span>
                 <button id="btn-portal-display" onclick="switchView('display-monitor')" class="bg-accent text-primary px-3 py-1.5 rounded-lg text-xs font-bold hover:bg-yellow-400 transition flex items-center gap-1">
                     <i class="fa-solid fa-desktop"></i> Monitor Live
@@ -573,11 +573,18 @@
     <!-- ============================================ -->
     <!-- LOGIC SYSTEM & SCRIPT SINKRONISASI -->
     <!-- ============================================ -->
-    <script>
-        // === KONFIGURASI WEB APP URL GOOGLE APPS SCRIPT ===
-        // PASTE DI SINI: Masukkan URL Web App Google Apps Script Anda (dari deploy baru Apps Script)
-        // Agar semua HP/perangkat langsung terhubung secara otomatis ke database asli!
-        const DEFAULT_GAS_WEBAPP_URL = "ISI_DENGAN_URL_WEB_APP_APPS_SCRIPT_ANDA";
+    <script type="module">
+        // Import Firebase modules secara langsung untuk sinkronisasi konfigurasi antar-perangkat secara otomatis
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // Global Firebase variables
+        window.firebaseApp = null;
+        window.firebaseAuth = null;
+        window.firebaseDb = null;
+        window.firebaseUser = null;
+        window.appId = typeof __app_id !== 'undefined' ? __app_id : 'uin-arranyri-absensi-default';
 
         // === STATE & LOCAL DATA (SIMULATION BACKUP) ===
         let MOCK_PETUGAS = [
@@ -605,19 +612,20 @@
         let isLiveMode = false;
         let gasWebappUrl = "";
 
+        // TUGAS ADMIN: Masukkan URL Google Apps Script Anda di bawah ini
+        const DEFAULT_GAS_WEBAPP_URL = ""; 
+
         // Fungsi pembersih format waktu di Frontend (Sangat krusial untuk membuang format epoch 1899-12-30)
         function formatTimeClean(timeStr) {
             if (!timeStr) return "-";
             timeStr = timeStr.toString().trim();
-            // Jika dikirim dalam bentuk ISO string: "1899-12-30T01:23:04.000Z"
             if (timeStr.includes("T") && timeStr.includes("Z")) {
                 const parts = timeStr.split("T");
                 if (parts.length > 1) {
-                    const cleanTime = parts[1].split(".")[0]; // Menghasilkan "01:23:04"
+                    const cleanTime = parts[1].split(".")[0]; 
                     return cleanTime;
                 }
             }
-            // Jika bertipe waktu yang mengandung jam lengkap (HH:mm:ss)
             const match = timeStr.match(/(\d{2}):(\d{2}):(\d{2})/);
             if (match) {
                 return match[0];
@@ -646,16 +654,42 @@
             return `${year}-${month}-${day}`;
         }
 
-        // On Load Initializer
-        window.onload = function() {
-            // Ambil URL dari localStorage, jika kosong gunakan DEFAULT_GAS_WEBAPP_URL yang dihardcode
+        // --- SISTEM AUTOLOAD KONFIGURASI API TERINTEGRASI ---
+        async function fetchCloudConfig() {
+            if (!window.firebaseDb) {
+                loadLocalConfig();
+                return;
+            }
+            try {
+                // Ambil konfigurasi API dari cloud Firestore agar otomatis tersinkronisasi di HP semua petugas
+                const configDocRef = doc(window.firebaseDb, 'artifacts', window.appId, 'public', 'data', 'api_settings');
+                const docSnap = await getDoc(configDocRef);
+                
+                if (docSnap.exists() && docSnap.data().url) {
+                    const cloudUrl = docSnap.data().url.trim();
+                    gasWebappUrl = cloudUrl;
+                    isLiveMode = true;
+                    localStorage.setItem("gas_webapp_url", cloudUrl);
+                    updateConnectionState(true);
+                    
+                    const inputEl = document.getElementById("admin-config-url-input");
+                    if (inputEl) inputEl.value = cloudUrl;
+                } else {
+                    loadLocalConfig();
+                }
+            } catch (err) {
+                console.error("Gagal memuat konfigurasi cloud:", err);
+                loadLocalConfig();
+            }
+        }
+
+        function loadLocalConfig() {
             const savedUrl = localStorage.getItem("gas_webapp_url");
-            
-            if (savedUrl && savedUrl.trim() !== "" && savedUrl !== "ISI_DENGAN_URL_WEB_APP_APPS_SCRIPT_ANDA") {
+            if (savedUrl && savedUrl.trim() !== "") {
                 gasWebappUrl = savedUrl;
                 isLiveMode = true;
                 updateConnectionState(true);
-            } else if (DEFAULT_GAS_WEBAPP_URL && DEFAULT_GAS_WEBAPP_URL.trim() !== "" && DEFAULT_GAS_WEBAPP_URL !== "ISI_DENGAN_URL_WEB_APP_APPS_SCRIPT_ANDA") {
+            } else if (DEFAULT_GAS_WEBAPP_URL && DEFAULT_GAS_WEBAPP_URL.trim() !== "") {
                 gasWebappUrl = DEFAULT_GAS_WEBAPP_URL;
                 isLiveMode = true;
                 updateConnectionState(true);
@@ -663,14 +697,56 @@
                 isLiveMode = false;
                 updateConnectionState(false);
             }
+        }
 
+        // Inisialisasi Firebase & Jalankan Aplikasi
+        window.addEventListener('DOMContentLoaded', () => {
+            // Coba inisialisasi Firebase dari config global yang disediakan sistem
+            if (typeof __firebase_config !== 'undefined' && __firebase_config) {
+                try {
+                    const firebaseConfig = JSON.parse(__firebase_config);
+                    window.firebaseApp = initializeApp(firebaseConfig);
+                    window.firebaseAuth = getAuth(window.firebaseApp);
+                    window.firebaseDb = getFirestore(window.firebaseApp);
+
+                    const authTask = async () => {
+                        if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                            await signInWithCustomToken(window.firebaseAuth, __initial_auth_token);
+                        } else {
+                            await signInAnonymously(window.firebaseAuth);
+                        }
+                    };
+
+                    authTask().then(() => {
+                        onAuthStateChanged(window.firebaseAuth, (user) => {
+                            window.firebaseUser = user;
+                            if (user) {
+                                fetchCloudConfig();
+                            } else {
+                                loadLocalConfig();
+                            }
+                        });
+                    }).catch(err => {
+                        console.warn("Auth Firebase terhambat. Masuk mode lokal.");
+                        loadLocalConfig();
+                    });
+
+                } catch (e) {
+                    console.error("Inisialisasi Firebase Gagal:", e);
+                    loadLocalConfig();
+                }
+            } else {
+                loadLocalConfig();
+            }
+
+            // Memuat konfigurasi teks pengumuman
             const savedRunningText = localStorage.getItem("running_text_content");
             if (savedRunningText) {
                 runningText = savedRunningText;
             }
             updateRunningTextUi();
 
-            // Set bulan default
+            // Atur input penanggalan default ke bulan berjalan
             const today = new Date();
             const year = today.getFullYear();
             const month = String(today.getMonth() + 1).padStart(2, '0');
@@ -683,32 +759,44 @@
             }
 
             startClockTicking();
-        };
-
-        function saveToLocalDb() {
-            localStorage.setItem("db_petugas", JSON.stringify(MOCK_PETUGAS));
-            localStorage.setItem("db_absensi", JSON.stringify(MOCK_ABSENSI));
-            localStorage.setItem("db_pengumuman", JSON.stringify(MOCK_PENGUMUMAN));
-        }
-
-        function loadFromLocalDb() {
-            MOCK_PETUGAS = JSON.parse(localStorage.getItem("db_petugas"));
-            MOCK_ABSENSI = JSON.parse(localStorage.getItem("db_absensi"));
-            MOCK_PENGUMUMAN = JSON.parse(localStorage.getItem("db_pengumuman"));
-        }
+        });
 
         function updateConnectionState(live) {
             const badge = document.getElementById("connection-badge");
             const text = document.getElementById("connection-text");
+            const pulse = document.getElementById("connection-pulse");
             if (live) {
-                badge.className = "px-3 py-1 text-xs rounded-full bg-emerald-600 text-white font-semibold shadow flex items-center gap-1.5 animate-bounce";
+                badge.className = "px-3 py-1 text-xs rounded-full bg-emerald-600 text-white font-semibold shadow flex items-center gap-1.5 animate-pulse";
                 text.textContent = "Koneksi Live Google Sheets";
+                if (pulse) pulse.className = "w-2 h-2 rounded-full bg-white";
             } else {
                 badge.className = "px-3 py-1 text-xs rounded-full bg-yellow-500 text-black font-semibold shadow flex items-center gap-1.5";
                 text.textContent = "Mode Simulasi (Demo)";
+                if (pulse) pulse.className = "w-2 h-2 rounded-full bg-red-600 animate-ping";
             }
         }
 
+        // --- ATUR EXPORT KE WINDOW AGAR TOMBOL HTML DAPAT MENGAKSES FUNGSI DI MODUL ---
+        window.switchView = switchView;
+        window.backFromMonitor = backFromMonitor;
+        window.setLoginRole = setLoginRole;
+        window.handleLoginSubmit = handleLoginSubmit;
+        window.handleLogout = handleLogout;
+        window.triggerAbsen = triggerAbsen;
+        window.openFormPetugasModal = openFormPetugasModal;
+        window.closeFormPetugasModal = closeFormPetugasModal;
+        window.handlePetugasSubmit = handlePetugasSubmit;
+        window.deletePetugasSubmit = deletePetugasSubmit;
+        window.loadAdminRekapData = loadAdminRekapData;
+        window.printLaporanAbsensi = printLaporanAbsensi;
+        window.saveRunningTextSubmit = saveRunningTextSubmit;
+        window.saveAnnouncementSubmit = saveAnnouncementSubmit;
+        window.deleteAnnouncementSubmit = deleteAnnouncementSubmit;
+        window.saveApiUrl = saveApiUrl;
+        window.testConnection = testConnection;
+        window.loadDisplayMonitorData = loadDisplayMonitorData;
+
+        // --- SELEBIHNYA DIJALANKAN SECARA INTERNAL DI MODUL ---
         function updateRunningTextUi() {
             const el = document.getElementById("running-text-content");
             if (el) el.textContent = runningText;
@@ -789,19 +877,6 @@
             }
         }
 
-        async function fetchAPI(url, options = {}, retries = 5, delay = 1000) {
-            for (let i = 0; i < retries; i++) {
-                try {
-                    const response = await fetch(url, options);
-                    if (!response.ok) throw new Error("Jaringan error");
-                    return await response.json();
-                } catch (err) {
-                    if (i === retries - 1) throw err;
-                    await new Promise(res => setTimeout(res, delay * Math.pow(2, i)));
-                }
-            }
-        }
-
         async function handleLoginSubmit(e) {
             e.preventDefault();
             const userIn = document.getElementById("login-username").value;
@@ -875,10 +950,6 @@
             switchView("login");
         }
 
-        // ============================================
-        // LOGIC FOR PETUGAS
-        // ============================================
-
         function loadPetugasDashboardData() {
             document.getElementById("petugas-welcome").textContent = currentUser.nama;
             document.getElementById("petugas-lokasi").textContent = currentUser.lokasi_kerja;
@@ -943,7 +1014,6 @@
             const clockInEl = document.getElementById("time-display-datang");
             const btnDatang = document.getElementById("btn-absen-datang");
             
-            // Format waktu aman
             const displayDatang = formatTimeClean(statusHariIni.datang);
             const displayPulang = formatTimeClean(statusHariIni.pulang);
 
@@ -1085,11 +1155,6 @@
             saveToLocalDb();
             loadPetugasDashboardData();
         }
-
-
-        // ============================================
-        // LOGIC FOR ADMIN & OPERATOR
-        // ============================================
 
         function setAdminTab(tabName) {
             const tabs = ["petugas", "rekap", "pengumuman", "config"];
@@ -1264,7 +1329,6 @@
             loadAdminStaffData();
         }
 
-        // REKAP BULANAN & CETAK
         async function loadAdminRekapData() {
             const monthInput = document.getElementById("admin-rekap-month-input").value;
             if (!monthInput) {
@@ -1380,6 +1444,53 @@
             win.print();
         }
 
+        async function saveApiUrl() {
+            const urlInput = document.getElementById("admin-config-url-input").value.trim();
+            if (!urlInput || urlInput === "ISI_DENGAN_URL_WEB_APP_APPS_SCRIPT_ANDA") {
+                localStorage.removeItem("gas_webapp_url");
+                gasWebappUrl = "";
+                isLiveMode = false;
+                updateConnectionState(false);
+                showAlert("Koneksi API direset ke Mode Simulasi Offline.", "success");
+            } else {
+                localStorage.setItem("gas_webapp_url", urlInput);
+                gasWebappUrl = urlInput;
+                isLiveMode = true;
+                updateConnectionState(true);
+
+                // --- PROSES UPLOAD CONFIG API KE CLOUD FIRESTORE ---
+                if (window.firebaseDb && window.firebaseUser) {
+                    try {
+                        const configDocRef = doc(window.firebaseDb, 'artifacts', window.appId, 'public', 'data', 'api_settings');
+                        await setDoc(configDocRef, { url: urlInput }, { merge: true });
+                        showAlert("URL API tersimpan di Cloud! Seluruh HP Android petugas kini otomatis LIVE.", "success");
+                    } catch (err) {
+                        console.error("Gagal sinkron cloud:", err);
+                        showAlert("URL disimpan lokal di browser ini.", "success");
+                    }
+                } else {
+                    showAlert("Konfigurasi URL Google Apps Script berhasil disimpan lokal.", "success");
+                }
+            }
+        }
+
+        async function testConnection() {
+            const urlInput = document.getElementById("admin-config-url-input").value.trim();
+            if (!urlInput) return showAlert("Input URL kosong.", "error");
+
+            showAlert("Menguji koneksi ke server Google Sheets...", "success");
+            try {
+                const res = await fetch(`${urlInput}?action=getAnnouncements`).then(r => r.json());
+                if (res.success) {
+                    showAlert("Koneksi Sukses! Server Google Sheets merespons dengan baik.", "success");
+                } else {
+                    showAlert("Koneksi tersambung, namun server mengembalikan respons error.", "error");
+                }
+            } catch (err) {
+                showAlert("Gagal tersambung ke Google Apps Script.", "error");
+            }
+        }
+
         function saveRunningTextSubmit() {
             const textVal = document.getElementById("admin-input-running-text").value.trim();
             if (!textVal) {
@@ -1488,85 +1599,6 @@
             loadAdminAnnouncements();
         }
 
-        function saveApiUrl() {
-            const urlInput = document.getElementById("admin-config-url-input").value.trim();
-            if (!urlInput || urlInput === "ISI_DENGAN_URL_WEB_APP_APPS_SCRIPT_ANDA") {
-                localStorage.removeItem("gas_webapp_url");
-                gasWebappUrl = "";
-                isLiveMode = false;
-                updateConnectionState(false);
-                showAlert("Koneksi API direset ke Mode Simulasi Offline.", "success");
-            } else {
-                localStorage.setItem("gas_webapp_url", urlInput);
-                gasWebappUrl = urlInput;
-                isLiveMode = true;
-                updateConnectionState(true);
-                showAlert("Konfigurasi URL Google Apps Script berhasil disimpan. Sistem siap digunakan secara langsung!", "success");
-            }
-        }
-
-        async function testConnection() {
-            const urlInput = document.getElementById("admin-config-url-input").value.trim();
-            if (!urlInput) return showAlert("Input URL kosong.", "error");
-
-            showAlert("Menguji koneksi ke server Google Sheets...", "success");
-            try {
-                const res = await fetch(`${urlInput}?action=getAnnouncements`).then(r => r.json());
-                if (res.success) {
-                    showAlert("Koneksi Sukses! Server Google Sheets merespons dengan baik.", "success");
-                } else {
-                    showAlert("Koneksi tersambung, namun server mengembalikan respons error.", "error");
-                }
-            } catch (err) {
-                showAlert("Gagal tersambung ke Google Apps Script. Pastikan Anda telah meng-deploy sebagai 'Anyone' dan menyalin URL dengan benar.", "error");
-            }
-        }
-
-        // ============================================
-        // LOGIC FOR REAL-TIME DISPLAY MONITOR
-        // ============================================
-
-        // Inisialisasi pergerakan autoscroll keatas (slow & smooth auto-marquee)
-        function initAutoScroll(containerId) {
-            const el = document.getElementById(containerId);
-            if (!el) return;
-            
-            // Hentikan interval lama jika ada
-            if (el.scrollTimer) {
-                clearInterval(el.scrollTimer);
-            }
-            
-            // Jika konten tidak melebihi tinggi layar display, tidak perlu scroll
-            if (el.scrollHeight <= el.clientHeight) {
-                return; 
-            }
-            
-            el.dataset.paused = "false";
-            
-            // Pasang event listener hover & touch untuk PAUSE otomatis
-            if (!el.dataset.eventsAttached) {
-                el.addEventListener('mouseenter', () => { el.dataset.paused = "true"; });
-                el.addEventListener('mouseleave', () => { el.dataset.paused = "false"; });
-                el.addEventListener('touchstart', () => { el.dataset.paused = "true"; }, {passive: true});
-                el.addEventListener('touchend', () => { el.dataset.paused = "false"; }, {passive: true});
-                el.dataset.eventsAttached = "true";
-            }
-            
-            // Menjalankan scroll pelan setinggi 1px secara berkala (35ms per step)
-            el.scrollTimer = setInterval(() => {
-                if (el.dataset.paused === "true") return;
-                
-                el.scrollTop += 1;
-                
-                // Ketika sudah melewati setengah konten (karena isinya kita duplikasi secara seamless)
-                // maka scroll ditarik kembali ke atas secara instan tanpa kelihatan melompat
-                const halfHeight = el.scrollHeight / 2;
-                if (el.scrollTop >= halfHeight) {
-                    el.scrollTop = 0;
-                }
-            }, 35);
-        }
-
         async function loadDisplayMonitorData() {
             const containerHadir = document.getElementById("monitor-container-hadir");
             const containerBelum = document.getElementById("monitor-container-belum-hadir");
@@ -1602,7 +1634,6 @@
             document.getElementById("badge-hadir-count").textContent = `${totalHadir} Orang`;
             document.getElementById("badge-belum-count").textContent = `${displayData.belum_hadir.length} Orang`;
 
-            // 1. Render kolom Hadir
             let htmlHadir = "";
             if (displayData.hadir.length === 0) {
                 htmlHadir = `<div class="p-6 text-center text-gray-400 text-xs">Belum ada petugas yang melakukan absensi hari ini.</div>`;
@@ -1628,13 +1659,10 @@
                     `;
                 });
                 
-                // Duplikasi konten agar marqee loop berjalan tanpa jeda kosong
                 containerHadir.innerHTML = `<div class="space-y-2.5 pb-2.5">${htmlHadir}</div><div class="space-y-2.5">${htmlHadir}</div>`;
-                // Aktifkan auto scroll
                 setTimeout(() => initAutoScroll("monitor-container-hadir"), 100);
             }
 
-            // 2. Render kolom Belum Hadir
             let htmlBelum = "";
             if (displayData.belum_hadir.length === 0) {
                 htmlBelum = `<div class="p-6 text-center text-emerald-600 font-bold text-xs"><i class="fa-solid fa-square-check"></i> Semua petugas kebersihan telah hadir bekerja!</div>`;
@@ -1654,16 +1682,13 @@
                     `;
                 });
                 
-                // Duplikasi konten agar marquee loop berjalan tanpa jeda kosong
                 containerBelum.innerHTML = `<div class="space-y-2.5 pb-2.5">${htmlBelum}</div><div class="space-y-2.5">${htmlBelum}</div>`;
-                // Aktifkan auto scroll
                 setTimeout(() => initAutoScroll("monitor-container-belum-hadir"), 100);
             }
         }
 
         function getSimulatedDisplayData() {
             const todayStr = getLocalDateString();
-            
             const hadir = [];
             const belum_hadir = [];
 
@@ -1689,18 +1714,6 @@
             });
 
             return { hadir, belum_hadir };
-        }
-
-        // ============================================
-        // COMMON HELPER FUNCTIONS
-        // ============================================
-
-        function formatDateIndo(dateStr) {
-            if (!dateStr) return "-";
-            const dateObj = new Date(dateStr);
-            if (isNaN(dateObj)) return dateStr;
-            const options = { day: 'numeric', month: 'long', year: 'numeric' };
-            return dateObj.toLocaleDateString('id-ID', options);
         }
     </script>
 </body>
