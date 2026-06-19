@@ -589,9 +589,49 @@
         let isLiveMode = false;
         let gasWebappUrl = "";
 
+        // Fungsi pembersih format waktu di Frontend (Sangat krusial untuk membuang format epoch 1899-12-30)
+        function formatTimeClean(timeStr) {
+            if (!timeStr) return "-";
+            timeStr = timeStr.toString().trim();
+            // Jika dikirim dalam bentuk ISO string: "1899-12-30T01:23:04.000Z"
+            if (timeStr.includes("T") && timeStr.includes("Z")) {
+                const parts = timeStr.split("T");
+                if (parts.length > 1) {
+                    const cleanTime = parts[1].split(".")[0]; // Menghasilkan "01:23:04"
+                    return cleanTime;
+                }
+            }
+            // Jika bertipe waktu yang mengandung jam lengkap (HH:mm:ss)
+            const match = timeStr.match(/(\d{2}):(\d{2}):(\d{2})/);
+            if (match) {
+                return match[0];
+            }
+            return timeStr;
+        }
+
+        // Fungsi normalisasi ID di frontend
+        function normalizeId(id) {
+            if (id === null || id === undefined) return "";
+            let s = id.toString().trim().toLowerCase();
+            if (s.endsWith(".0")) {
+                s = s.substring(0, s.length - 2);
+            }
+            s = s.replace(/^(p|pk|usr|id)-?/, "");
+            s = s.replace(/^0+/, "");
+            return s || "0";
+        }
+
+        // Dapatkan tanggal lokal perangkat petugas (Menghindari bug timezone ISOString UTC)
+        function getLocalDateString() {
+            const d = new Date();
+            const year = d.getFullYear();
+            const month = String(d.getMonth() + 1).padStart(2, '0');
+            const day = String(d.getDate()).padStart(2, '0');
+            return `${year}-${month}-${day}`;
+        }
+
         // On Load Initializer
         window.onload = function() {
-            // Load credentials and URL config from localStorage
             const savedUrl = localStorage.getItem("gas_webapp_url");
             if (savedUrl) {
                 gasWebappUrl = savedUrl;
@@ -601,27 +641,24 @@
                 updateConnectionState(false);
             }
 
-            // Load saved running text from localStorage
             const savedRunningText = localStorage.getItem("running_text_content");
             if (savedRunningText) {
                 runningText = savedRunningText;
             }
             updateRunningTextUi();
 
-            // Atur default input bulan rekap ke bulan saat ini
+            // Set bulan default
             const today = new Date();
             const year = today.getFullYear();
             const month = String(today.getMonth() + 1).padStart(2, '0');
             document.getElementById("admin-rekap-month-input").value = `${year}-${month}`;
 
-            // Sync database lokal jika ada di localStorage (supaya simulasi interaktif)
             if (!localStorage.getItem("db_petugas")) {
                 saveToLocalDb();
             } else {
                 loadFromLocalDb();
             }
 
-            // Default display time ticking
             startClockTicking();
         };
 
@@ -649,7 +686,6 @@
             }
         }
 
-        // Teks Berjalan Updater
         function updateRunningTextUi() {
             const el = document.getElementById("running-text-content");
             if (el) el.textContent = runningText;
@@ -657,7 +693,6 @@
             if (inputEl) inputEl.value = runningText;
         }
 
-        // Clock display ticking
         function startClockTicking() {
             setInterval(() => {
                 const clockElements = [document.getElementById("time-display-datang"), document.getElementById("time-display-pulang")];
@@ -671,7 +706,6 @@
             }, 1000);
         }
 
-        // Custom Dynamic Alerts
         function showAlert(message, type = "success") {
             const container = document.getElementById("alert-container");
             container.className = `p-4 mb-4 rounded-xl text-xs font-bold shadow-md flex items-center gap-2 ${
@@ -688,7 +722,6 @@
             }, 5000);
         }
 
-        // Navigation Views (SPA switching)
         function switchView(viewId) {
             const views = ["view-login", "view-petugas-dashboard", "view-admin-dashboard", "view-display-monitor"];
             views.forEach(v => {
@@ -696,14 +729,12 @@
             });
             document.getElementById(`view-${viewId}`).classList.remove("hidden");
             
-            // Adjust home portal button visibility
             if (viewId === "display-monitor") {
                 document.getElementById("btn-portal-display").classList.add("hidden");
             } else {
                 document.getElementById("btn-portal-display").classList.remove("hidden");
             }
 
-            // Load data accordingly
             if (viewId === "display-monitor") {
                 loadDisplayMonitorData();
             }
@@ -721,7 +752,6 @@
             }
         }
 
-        // Switch role on Login Card
         function setLoginRole(role) {
             activeLoginRole = role;
             const btnPetugas = document.getElementById("tab-login-petugas");
@@ -736,7 +766,6 @@
             }
         }
 
-        // API Call Wrapper with Retries & Error Handling
         async function fetchAPI(url, options = {}, retries = 5, delay = 1000) {
             for (let i = 0; i < retries; i++) {
                 try {
@@ -745,12 +774,11 @@
                     return await response.json();
                 } catch (err) {
                     if (i === retries - 1) throw err;
-                    await new Promise(res => setTimeout(res, delay * Math.pow(2, i))); // Exponential backoff
+                    await new Promise(res => setTimeout(res, delay * Math.pow(2, i)));
                 }
             }
         }
 
-        // LOGIN HANDLER
         async function handleLoginSubmit(e) {
             e.preventDefault();
             const userIn = document.getElementById("login-username").value;
@@ -788,7 +816,6 @@
 
         function simulatedLogin(username, password) {
             if (activeLoginRole === "admin") {
-                // Password admin diganti menjadi 1122 sesuai instruksi
                 if (username === "admin" && password === "1122") {
                     currentUser = { username: "admin", nama: "Operator Rektorat", role: "admin" };
                     postLoginRedirect();
@@ -835,11 +862,9 @@
             document.getElementById("petugas-id-display").textContent = "ID Petugas: " + currentUser.id_petugas;
             document.getElementById("petugas-avatar-text").textContent = currentUser.nama.substring(0, 2).toUpperCase();
 
-            // Set default date di rekap
             const dateStr = new Date().toLocaleString('id-ID', { month: 'long', year: 'numeric' });
             document.getElementById("rekap-bulan-name").textContent = dateStr;
 
-            // Load announcements
             renderPetugasAnnouncement();
 
             if (isLiveMode) {
@@ -877,8 +902,9 @@
         }
 
         function syncPetugasDashboardSimulated() {
-            const todayStr = new Date().toISOString().substring(0, 10);
-            const riwayatUser = MOCK_ABSENSI.filter(a => a.id_petugas === currentUser.id_petugas);
+            const todayStr = getLocalDateString();
+            const normMyId = normalizeId(currentUser.id_petugas);
+            const riwayatUser = MOCK_ABSENSI.filter(a => normalizeId(a.id_petugas) === normMyId);
             
             const todayAbsen = riwayatUser.find(a => a.tanggal === todayStr);
             const statusHariIni = {
@@ -891,11 +917,15 @@
         }
 
         function updatePetugasDashboardUi(statusHariIni, riwayat) {
-            // Update Jam Datang panel
             const clockInEl = document.getElementById("time-display-datang");
             const btnDatang = document.getElementById("btn-absen-datang");
+            
+            // Format waktu aman
+            const displayDatang = formatTimeClean(statusHariIni.datang);
+            const displayPulang = formatTimeClean(statusHariIni.pulang);
+
             if (statusHariIni.datang) {
-                clockInEl.textContent = statusHariIni.datang;
+                clockInEl.textContent = displayDatang;
                 clockInEl.className = "text-3xl font-extrabold text-emerald-600";
                 btnDatang.disabled = true;
                 btnDatang.className = "w-full bg-emerald-100 text-emerald-700 py-3 rounded-xl font-bold cursor-not-allowed transition flex items-center justify-center gap-2";
@@ -908,14 +938,12 @@
                 btnDatang.innerHTML = `<i class="fa-solid fa-right-to-bracket"></i> Absen Datang Sekarang`;
             }
 
-            // Update Jam Pulang panel
             const clockOutEl = document.getElementById("time-display-pulang");
             const btnPulang = document.getElementById("btn-absen-pulang");
 
-            // Aturan absensi pulang: Hanya aktif jika sudah absen datang & (Simulasi membolehkan pulang kapan saja untuk kemudahan demo)
             if (statusHariIni.datang) {
                 if (statusHariIni.pulang) {
-                    clockOutEl.textContent = statusHariIni.pulang;
+                    clockOutEl.textContent = displayPulang;
                     clockOutEl.className = "text-3xl font-extrabold text-emerald-600";
                     btnPulang.disabled = true;
                     btnPulang.className = "w-full bg-emerald-100 text-emerald-700 py-3 rounded-xl font-bold cursor-not-allowed transition flex items-center justify-center gap-2";
@@ -935,7 +963,6 @@
                 btnPulang.innerHTML = `<i class="fa-solid fa-lock"></i> Absen Datang Dahulu`;
             }
 
-            // Render Table Riwayat
             const tbody = document.getElementById("petugas-table-riwayat-body");
             tbody.innerHTML = "";
             if (riwayat.length === 0) {
@@ -946,8 +973,8 @@
                     tbody.innerHTML += `
                         <tr class="hover:bg-gray-50 transition">
                             <td class="p-3 font-semibold text-xs text-gray-600">${formatDateIndo(row.tanggal)}</td>
-                            <td class="p-3 text-xs text-gray-700">${row.jam_datang || '-'}</td>
-                            <td class="p-3 text-xs text-gray-700">${row.jam_pulang || '-'}</td>
+                            <td class="p-3 text-xs text-gray-700">${formatTimeClean(row.jam_datang) || '-'}</td>
+                            <td class="p-3 text-xs text-gray-700">${formatTimeClean(row.jam_pulang) || '-'}</td>
                             <td class="p-3">
                                 <span class="px-2 py-1 text-[10px] font-extrabold rounded-full ${badgeClass}">${row.status}</span>
                             </td>
@@ -957,7 +984,6 @@
             }
         }
 
-        // TRIGGER GEOLOCATION & RECORD ABSENCE
         function triggerAbsen(type) {
             if (navigator.geolocation) {
                 showAlert("Sedang mengunci lokasi koordinat GPS Anda...", "success");
@@ -967,9 +993,8 @@
                         executeAbsen(type, koordinat);
                     },
                     (error) => {
-                        // Jika GPS dinonaktifkan / diblokir, tetap izinkan absen dengan fallback koordinat UIN Ar-Raniry
                         showAlert("Izin GPS ditolak atau tidak tersedia. Menggunakan penentuan lokasi cadangan UIN.", "error");
-                        executeAbsen(type, "5.5701, 95.3695"); // Koordinat Pusat Kampus UIN Ar-Raniry
+                        executeAbsen(type, "5.5701, 95.3695");
                     }
                 );
             } else {
@@ -1007,7 +1032,7 @@
         }
 
         function executeAbsenSimulated(type, koordinat) {
-            const todayStr = new Date().toISOString().substring(0, 10);
+            const todayStr = getLocalDateString();
             const nowTimeStr = new Date().toTimeString().split(' ')[0];
 
             if (type === "datang") {
@@ -1026,7 +1051,8 @@
                 });
                 showAlert(`Absensi datang berhasil disimpan [Simulasi] pukul ${nowTimeStr} (${status}).`, "success");
             } else {
-                const record = MOCK_ABSENSI.find(a => a.id_petugas === currentUser.id_petugas && a.tanggal === todayStr);
+                const normMyId = normalizeId(currentUser.id_petugas);
+                const record = MOCK_ABSENSI.find(a => normalizeId(a.id_petugas) === normMyId && a.tanggal === todayStr);
                 if (record) {
                     record.jam_pulang = nowTimeStr;
                     record.koordinat_pulang = koordinat;
@@ -1052,12 +1078,10 @@
             document.getElementById(`tab-admin-${tabName}`).className = "flex-1 py-2.5 text-center text-xs font-bold rounded-lg bg-white text-primary shadow-sm transition";
             document.getElementById(`admin-panel-${tabName}`).classList.remove("hidden");
 
-            // Dispatch load
             if (tabName === "petugas") {
                 loadAdminStaffData();
             } else if (tabName === "pengumuman") {
                 loadAdminAnnouncements();
-                // Set isi input teks berjalan di admin panel
                 document.getElementById("admin-input-running-text").value = runningText;
             } else if (tabName === "config") {
                 document.getElementById("admin-config-url-input").value = gasWebappUrl;
@@ -1102,7 +1126,6 @@
             }
         }
 
-        // CRUD MODAL ACTIONS
         function openFormPetugasModal(action, id = "", nama = "", username = "", password = "", lokasi = "Gedung Rektorat", telp = "") {
             document.getElementById("form-petugas-action").value = action;
             document.getElementById("form-petugas-id").value = id;
@@ -1176,7 +1199,7 @@
                 });
                 showAlert("Petugas baru berhasil ditambahkan [Simulasi]");
             } else {
-                const idx = MOCK_PETUGAS.findIndex(p => p.id_petugas === payload.id_petugas);
+                const idx = MOCK_PETUGAS.findIndex(p => normalizeId(p.id_petugas) === normalizeId(payload.id_petugas));
                 if (idx !== -1) {
                     MOCK_PETUGAS[idx] = { ...MOCK_PETUGAS[idx], ...payload };
                     showAlert("Profil petugas berhasil diperbarui [Simulasi]");
@@ -1211,7 +1234,8 @@
         }
 
         function deletePetugasSimulated(id) {
-            MOCK_PETUGAS = MOCK_PETUGAS.filter(p => p.id_petugas !== id);
+            const normId = normalizeId(id);
+            MOCK_PETUGAS = MOCK_PETUGAS.filter(p => normalizeId(p.id_petugas) !== normId);
             saveToLocalDb();
             showAlert("Petugas telah dihapus secara lokal.");
             loadAdminStaffData();
@@ -1267,7 +1291,8 @@
         function getSimulatedMonthlyRecap(filterMonth) {
             const recap = {};
             MOCK_PETUGAS.forEach(p => {
-                recap[p.id_petugas] = {
+                const normId = normalizeId(p.id_petugas);
+                recap[normId] = {
                     id_petugas: p.id_petugas,
                     nama: p.nama,
                     lokasi_kerja: p.lokasi_kerja,
@@ -1280,7 +1305,8 @@
             MOCK_ABSENSI.forEach(a => {
                 const aMonth = a.tanggal.substring(0, 7);
                 if (aMonth === filterMonth) {
-                    const r = recap[a.id_petugas];
+                    const normId = normalizeId(a.id_petugas);
+                    const r = recap[normId];
                     if (r) {
                         r.total_kehadiran++;
                         if (a.status === "Tepat Waktu") {
@@ -1331,7 +1357,6 @@
             win.print();
         }
 
-        // SAVE RUNNING TEXT (Pembaruan Fitur Pengaturan)
         function saveRunningTextSubmit() {
             const textVal = document.getElementById("admin-input-running-text").value.trim();
             if (!textVal) {
@@ -1344,7 +1369,6 @@
             showAlert("Running Text berhasil diubah dan disimpan secara lokal!", "success");
         }
 
-        // PENGUMUMAN LOGIC
         async function loadAdminAnnouncements() {
             const listContainer = document.getElementById("admin-list-pengumuman");
             listContainer.innerHTML = `<p class="text-xs text-gray-400">Memuat pengumuman...</p>`;
@@ -1403,7 +1427,7 @@
         }
 
         function saveAnnouncementSimulated(text) {
-            const todayStr = new Date().toISOString().substring(0, 10);
+            const todayStr = getLocalDateString();
             MOCK_PENGUMUMAN.unshift({
                 id: "ANN-" + new Date().getTime(),
                 tanggal: todayStr,
@@ -1441,7 +1465,6 @@
             loadAdminAnnouncements();
         }
 
-        // CONFIG SAVE & TEST
         function saveApiUrl() {
             const urlInput = document.getElementById("admin-config-url-input").value.trim();
             if (!urlInput) {
@@ -1484,7 +1507,7 @@
             const containerHadir = document.getElementById("monitor-container-hadir");
             const containerBelum = document.getElementById("monitor-container-belum-hadir");
             
-            document.getElementById("monitor-tanggal-hari-ini").innerHTML = `<i class="fa-solid fa-calendar-day"></i> Hari Ini: ${formatDateIndo(new Date().toISOString().substring(0, 10))}`;
+            document.getElementById("monitor-tanggal-hari-ini").innerHTML = `<i class="fa-solid fa-calendar-day"></i> Hari Ini: ${formatDateIndo(getLocalDateString())}`;
 
             let displayData = { hadir: [], belum_hadir: [] };
 
@@ -1502,7 +1525,6 @@
                 displayData = getSimulatedDisplayData();
             }
 
-            // Update stats
             const totalHadir = displayData.hadir.length;
             const tepatWaktuCount = displayData.hadir.filter(h => h.status === "Tepat Waktu").length;
             const terlambatCount = displayData.hadir.filter(h => h.status === "Terlambat").length;
@@ -1516,7 +1538,6 @@
             document.getElementById("badge-hadir-count").textContent = `${totalHadir} Orang`;
             document.getElementById("badge-belum-count").textContent = `${displayData.belum_hadir.length} Orang`;
 
-            // Render Hadir List
             containerHadir.innerHTML = "";
             if (displayData.hadir.length === 0) {
                 containerHadir.innerHTML = `<div class="p-6 text-center text-gray-400 text-xs">Belum ada petugas yang mengabsensi hari ini.</div>`;
@@ -1535,14 +1556,13 @@
                             </div>
                             <div class="text-right flex flex-col items-end gap-1">
                                 <span class="text-[11px] font-extrabold px-2 py-0.5 rounded-full ${badgeClass}">${h.status}</span>
-                                <span class="text-[10px] text-gray-500 font-mono font-semibold">Datang: ${h.jam_datang} ${h.jam_pulang ? '| Pulang: ' + h.jam_pulang : ''}</span>
+                                <span class="text-[10px] text-gray-500 font-mono font-semibold">Datang: ${formatTimeClean(h.jam_datang)} ${h.jam_pulang ? '| Pulang: ' + formatTimeClean(h.jam_pulang) : ''}</span>
                             </div>
                         </div>
                     `;
                 });
             }
 
-            // Render Belum Hadir List
             containerBelum.innerHTML = "";
             if (displayData.belum_hadir.length === 0) {
                 containerBelum.innerHTML = `<div class="p-6 text-center text-emerald-600 font-bold text-xs"><i class="fa-solid fa-square-check"></i> Semua petugas kebersihan telah hadir bekerja!</div>`;
@@ -1564,13 +1584,14 @@
         }
 
         function getSimulatedDisplayData() {
-            const todayStr = new Date().toISOString().substring(0, 10);
+            const todayStr = getLocalDateString();
             
             const hadir = [];
             const belum_hadir = [];
 
             MOCK_PETUGAS.forEach(p => {
-                const record = MOCK_ABSENSI.find(a => a.id_petugas === p.id_petugas && a.tanggal === todayStr);
+                const normP = normalizeId(p.id_petugas);
+                const record = MOCK_ABSENSI.find(a => normalizeId(a.id_petugas) === normP && a.tanggal === todayStr);
                 if (record) {
                     hadir.push({
                         id_petugas: p.id_petugas,
