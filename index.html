@@ -479,9 +479,12 @@
                         </h3>
                         <span id="badge-hadir-count" class="bg-emerald-100 text-emerald-800 text-xs font-bold px-2.5 py-1 rounded-full">0 Orang</span>
                     </div>
-                    <div class="overflow-y-auto max-h-[450px] space-y-2.5 pr-1" id="monitor-container-hadir">
-                        <!-- JS Renders Items -->
-                        <p class="text-sm text-gray-400 text-center py-6">Belum ada petugas yang melakukan absensi hari ini.</p>
+                    <!-- Autoscrolling Container (Hidden scrollbar) -->
+                    <div class="h-[400px] overflow-hidden relative border border-gray-50 rounded-xl p-1 bg-gray-50/30">
+                        <div class="h-full overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] space-y-2.5" id="monitor-container-hadir">
+                            <!-- JS Renders Items -->
+                            <p class="text-sm text-gray-400 text-center py-6">Belum ada petugas yang melakukan absensi hari ini.</p>
+                        </div>
                     </div>
                 </div>
 
@@ -494,9 +497,12 @@
                         </h3>
                         <span id="badge-belum-count" class="bg-red-100 text-red-800 text-xs font-bold px-2.5 py-1 rounded-full">0 Orang</span>
                     </div>
-                    <div class="overflow-y-auto max-h-[450px] space-y-2.5 pr-1" id="monitor-container-belum-hadir">
-                        <!-- JS Renders Items -->
-                        <p class="text-sm text-gray-400 text-center py-6">Semua petugas telah hadir.</p>
+                    <!-- Autoscrolling Container (Hidden scrollbar) -->
+                    <div class="h-[400px] overflow-hidden relative border border-gray-50 rounded-xl p-1 bg-gray-50/30">
+                        <div class="h-full overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] space-y-2.5" id="monitor-container-belum-hadir">
+                            <!-- JS Renders Items -->
+                            <p class="text-sm text-gray-400 text-center py-6">Semua petugas telah hadir.</p>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -1503,6 +1509,47 @@
         // LOGIC FOR REAL-TIME DISPLAY MONITOR
         // ============================================
 
+        // Inisialisasi pergerakan autoscroll keatas (slow & smooth auto-marquee)
+        function initAutoScroll(containerId) {
+            const el = document.getElementById(containerId);
+            if (!el) return;
+            
+            // Hentikan interval lama jika ada
+            if (el.scrollTimer) {
+                clearInterval(el.scrollTimer);
+            }
+            
+            // Jika konten tidak melebihi tinggi layar display, tidak perlu scroll
+            if (el.scrollHeight <= el.clientHeight) {
+                return; 
+            }
+            
+            el.dataset.paused = "false";
+            
+            // Pasang event listener hover & touch untuk PAUSE otomatis
+            if (!el.dataset.eventsAttached) {
+                el.addEventListener('mouseenter', () => { el.dataset.paused = "true"; });
+                el.addEventListener('mouseleave', () => { el.dataset.paused = "false"; });
+                el.addEventListener('touchstart', () => { el.dataset.paused = "true"; }, {passive: true});
+                el.addEventListener('touchend', () => { el.dataset.paused = "false"; }, {passive: true});
+                el.dataset.eventsAttached = "true";
+            }
+            
+            // Menjalankan scroll pelan setinggi 1px secara berkala (35ms per step)
+            el.scrollTimer = setInterval(() => {
+                if (el.dataset.paused === "true") return;
+                
+                el.scrollTop += 1;
+                
+                // Ketika sudah melewati setengah konten (karena isinya kita duplikasi secara seamless)
+                // maka scroll ditarik kembali ke atas secara instan tanpa kelihatan melompat
+                const halfHeight = el.scrollHeight / 2;
+                if (el.scrollTop >= halfHeight) {
+                    el.scrollTop = 0;
+                }
+            }, 35);
+        }
+
         async function loadDisplayMonitorData() {
             const containerHadir = document.getElementById("monitor-container-hadir");
             const containerBelum = document.getElementById("monitor-container-belum-hadir");
@@ -1538,16 +1585,18 @@
             document.getElementById("badge-hadir-count").textContent = `${totalHadir} Orang`;
             document.getElementById("badge-belum-count").textContent = `${displayData.belum_hadir.length} Orang`;
 
-            containerHadir.innerHTML = "";
+            // 1. Render kolom Hadir
+            let htmlHadir = "";
             if (displayData.hadir.length === 0) {
-                containerHadir.innerHTML = `<div class="p-6 text-center text-gray-400 text-xs">Belum ada petugas yang mengabsensi hari ini.</div>`;
+                htmlHadir = `<div class="p-6 text-center text-gray-400 text-xs">Belum ada petugas yang melakukan absensi hari ini.</div>`;
+                containerHadir.innerHTML = htmlHadir;
             } else {
                 displayData.hadir.forEach(h => {
                     const isTelat = h.status === "Terlambat";
                     const badgeClass = isTelat ? "bg-amber-100 text-amber-800" : "bg-emerald-100 text-emerald-800";
                     
-                    containerHadir.innerHTML += `
-                        <div class="bg-gray-50 hover:bg-emerald-50 border-l-4 ${isTelat ? 'border-amber-500' : 'border-emerald-600'} p-3.5 rounded-r-xl flex justify-between items-center transition shadow-sm">
+                    htmlHadir += `
+                        <div class="bg-gray-50 hover:bg-emerald-50 border-l-4 ${isTelat ? 'border-amber-500' : 'border-emerald-600'} p-3.5 rounded-r-xl flex justify-between items-center transition shadow-sm select-none">
                             <div>
                                 <h4 class="font-bold text-xs text-gray-800">${h.nama}</h4>
                                 <p class="text-[10px] text-gray-500 flex items-center gap-1 mt-0.5">
@@ -1561,15 +1610,22 @@
                         </div>
                     `;
                 });
+                
+                // Duplikasi konten agar marqee loop berjalan tanpa jeda kosong
+                containerHadir.innerHTML = `<div class="space-y-2.5 pb-2.5">${htmlHadir}</div><div class="space-y-2.5">${htmlHadir}</div>`;
+                // Aktifkan auto scroll
+                setTimeout(() => initAutoScroll("monitor-container-hadir"), 100);
             }
 
-            containerBelum.innerHTML = "";
+            // 2. Render kolom Belum Hadir
+            let htmlBelum = "";
             if (displayData.belum_hadir.length === 0) {
-                containerBelum.innerHTML = `<div class="p-6 text-center text-emerald-600 font-bold text-xs"><i class="fa-solid fa-square-check"></i> Semua petugas kebersihan telah hadir bekerja!</div>`;
+                htmlBelum = `<div class="p-6 text-center text-emerald-600 font-bold text-xs"><i class="fa-solid fa-square-check"></i> Semua petugas kebersihan telah hadir bekerja!</div>`;
+                containerBelum.innerHTML = htmlBelum;
             } else {
                 displayData.belum_hadir.forEach(b => {
-                    containerBelum.innerHTML += `
-                        <div class="bg-gray-50 p-3.5 rounded-xl border-l-4 border-red-500 flex justify-between items-center shadow-sm">
+                    htmlBelum += `
+                        <div class="bg-gray-50 p-3.5 rounded-xl border-l-4 border-red-500 flex justify-between items-center shadow-sm select-none">
                             <div>
                                 <h4 class="font-bold text-xs text-gray-800">${b.nama}</h4>
                                 <p class="text-[10px] text-gray-500 flex items-center gap-1 mt-0.5">
@@ -1580,6 +1636,11 @@
                         </div>
                     `;
                 });
+                
+                // Duplikasi konten agar marquee loop berjalan tanpa jeda kosong
+                containerBelum.innerHTML = `<div class="space-y-2.5 pb-2.5">${htmlBelum}</div><div class="space-y-2.5">${htmlBelum}</div>`;
+                // Aktifkan auto scroll
+                setTimeout(() => initAutoScroll("monitor-container-belum-hadir"), 100);
             }
         }
 
