@@ -72,7 +72,7 @@
                     <span class="w-2 h-2 rounded-full bg-white animate-pulse"></span>
                     <span id="connection-text">Mode Simulasi (Demo)</span>
                 </span>
-                <button id="btn-portal-display" onclick="switchView('display-monitor')" class="bg-accent text-primary px-3 py-1.5 rounded-lg text-xs font-bold hover:bg-yellow-400 transition-all flex items-center gap-1 shadow-sm">
+                <button id="btn-portal-display" onclick="switchView('display-monitor')" class="bg-accent text-primary px-3 py-1.5 rounded-lg text-xs font-bold hover:bg-yellow-400 transition flex items-center gap-1">
                     <i class="fa-solid fa-desktop"></i> Monitor Live
                 </button>
             </div>
@@ -147,7 +147,7 @@
                     </form>
 
                     <div class="text-center pt-2">
-                        <p class="text-[11px] text-gray-400">Lupa password? Hubungi operator bagian administrasi UIN Ar-Raniry.</p>
+                        <p class="text-xs text-gray-400">Gunakan Akun Google Sheets atau Akun Simulasi Anda.</p>
                     </div>
                 </div>
             </div>
@@ -279,7 +279,7 @@
                 </div>
             </div>
 
-            <!-- Tab Navigasi Admin (Responsive grid on mobile) -->
+            <!-- Tab Navigasi Admin -->
             <div class="grid grid-cols-2 md:flex md:space-x-1 bg-gray-100 p-1.5 rounded-xl gap-1 md:gap-0">
                 <button id="tab-admin-petugas" onclick="setAdminTab('petugas')" class="py-2.5 text-center text-[11px] md:text-xs font-extrabold rounded-lg bg-white text-primary shadow-sm transition-all duration-200">
                     <i class="fa-solid fa-users mr-1"></i> Data Petugas
@@ -455,7 +455,7 @@
                 </div>
             </div>
 
-            <!-- Panel Statistik Ringkas (Responsive Grid) -->
+            <!-- Panel Statistik Ringkas -->
             <div class="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4 text-center">
                 <div class="bg-white p-4 rounded-xl shadow-sm border-b-4 border-emerald-500">
                     <p class="text-[10px] md:text-xs font-bold text-gray-400 uppercase tracking-wider">Hadir Tepat Waktu</p>
@@ -475,7 +475,7 @@
                 </div>
             </div>
 
-            <!-- Layout 2 Kolom Monitor (Side-by-Side on large, Stacked on mobile) -->
+            <!-- Layout 2 Kolom Monitor -->
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
                 <!-- Kolom 1: Sudah Hadir -->
                 <div class="bg-white p-4 md:p-6 rounded-2xl shadow-sm border border-emerald-100 flex flex-col space-y-4">
@@ -574,6 +574,11 @@
     <!-- LOGIC SYSTEM & SCRIPT SINKRONISASI -->
     <!-- ============================================ -->
     <script>
+        // === KONFIGURASI WEB APP URL GOOGLE APPS SCRIPT ===
+        // PASTE DI SINI: Masukkan URL Web App Google Apps Script Anda (dari deploy baru Apps Script)
+        // Agar semua HP/perangkat langsung terhubung secara otomatis ke database asli!
+        const DEFAULT_GAS_WEBAPP_URL = "ISI_DENGAN_URL_WEB_APP_APPS_SCRIPT_ANDA";
+
         // === STATE & LOCAL DATA (SIMULATION BACKUP) ===
         let MOCK_PETUGAS = [
             { id_petugas: "P001", nama: "Sulaiman Syah", username: "sulaiman", password: "123", lokasi_kerja: "Gedung Rektorat", telepon: "085211223344" },
@@ -643,12 +648,19 @@
 
         // On Load Initializer
         window.onload = function() {
+            // Ambil URL dari localStorage, jika kosong gunakan DEFAULT_GAS_WEBAPP_URL yang dihardcode
             const savedUrl = localStorage.getItem("gas_webapp_url");
-            if (savedUrl) {
+            
+            if (savedUrl && savedUrl.trim() !== "" && savedUrl !== "ISI_DENGAN_URL_WEB_APP_APPS_SCRIPT_ANDA") {
                 gasWebappUrl = savedUrl;
                 isLiveMode = true;
                 updateConnectionState(true);
+            } else if (DEFAULT_GAS_WEBAPP_URL && DEFAULT_GAS_WEBAPP_URL.trim() !== "" && DEFAULT_GAS_WEBAPP_URL !== "ISI_DENGAN_URL_WEB_APP_APPS_SCRIPT_ANDA") {
+                gasWebappUrl = DEFAULT_GAS_WEBAPP_URL;
+                isLiveMode = true;
+                updateConnectionState(true);
             } else {
+                isLiveMode = false;
                 updateConnectionState(false);
             }
 
@@ -816,7 +828,7 @@
                         showAlert(res.message || "Gagal masuk.", "error");
                     }
                 } catch (err) {
-                    showAlert("Kesalahan jaringan API Google Sheets. Melakukan bypass simulasi lokal...", "error");
+                    showAlert("Kesalahan koneksi ke Google Sheets. Menggunakan database simulasi lokal...", "error");
                     simulatedLogin(userIn, passIn);
                 }
             } else {
@@ -839,7 +851,7 @@
                     currentUser = { ...user, role: "petugas" };
                     postLoginRedirect();
                 } else {
-                    showAlert("Username atau password petugas tidak terdaftar.", "error");
+                    showAlert("Username atau password petugas tidak terdaftar pada simulasi lokal.", "error");
                 }
             }
         }
@@ -1478,7 +1490,7 @@
 
         function saveApiUrl() {
             const urlInput = document.getElementById("admin-config-url-input").value.trim();
-            if (!urlInput) {
+            if (!urlInput || urlInput === "ISI_DENGAN_URL_WEB_APP_APPS_SCRIPT_ANDA") {
                 localStorage.removeItem("gas_webapp_url");
                 gasWebappUrl = "";
                 isLiveMode = false;
