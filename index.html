@@ -1,0 +1,1608 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistem Absensi Petugas Kebersihan UIN Ar-Raniry</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Font - Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        /* Custom Palette UIN Ar-Raniry: Hijau Mendalam & Emas */
+        .color-primary { color: #0A5C36; }
+        .bg-primary { background-color: #0A5C36; }
+        .bg-primary-hover:hover { background-color: #08492b; }
+        .border-primary { border-color: #0A5C36; }
+        
+        .color-accent { color: #E5A93B; }
+        .bg-accent { background-color: #E5A93B; }
+        .bg-accent-hover:hover { background-color: #c9912c; }
+        .border-accent { border-color: #E5A93B; }
+
+        .pattern-bg {
+            background-color: #f3f4f6;
+            background-image: radial-gradient(#0a5c36 0.5px, transparent 0.5px), radial-gradient(#0a5c36 0.5px, #f3f4f6 0.5px);
+            background-size: 20px 20px;
+            background-position: 0 0, 10px 10px;
+            background-opacity: 0.05;
+        }
+
+        /* Running Text (Marquee) Animation */
+        @keyframes marquee {
+            0% { transform: translateX(100%); }
+            100% { transform: translateX(-100%); }
+        }
+        .animate-marquee {
+            display: inline-block;
+            white-space: nowrap;
+            animation: marquee 25s linear infinite;
+        }
+        .animate-marquee:hover {
+            animation-play-state: paused;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-800 min-h-screen flex flex-col">
+
+    <!-- TOP HEADER / BRANDING BAR -->
+    <header class="bg-primary text-white border-b-4 border-accent shadow-lg">
+        <div class="max-w-7xl mx-auto px-4 py-3 flex flex-col sm:flex-row justify-between items-center space-y-2 sm:space-y-0">
+            <div class="flex items-center space-x-3">
+                <div class="bg-white p-1.5 rounded-full shadow-md flex items-center justify-center">
+                    <!-- Lambang Kubah/Bintang Islami representatif -->
+                    <svg class="w-8 h-8 color-primary" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M12,2A10,10,0,0,0,2,12a10,10,0,0,0,10,10,10,10,0,0,0,10-10A10,10,0,0,0,12,2Zm1,17.93V17a1,1,0,0,0-2,0v2.93A8,8,0,0,1,4.07,13H7a1,1,0,0,0,0-2H4.07A8,8,0,0,1,11,4.07V7a1,1,0,0,0,2,0V4.07A8,8,0,0,1,19.93,11H17a1,1,0,0,0,0,2h2.93A8,8,0,0,1,13,19.93Z"/>
+                    </svg>
+                </div>
+                <div class="text-center sm:text-left">
+                    <h1 class="text-lg font-extrabold tracking-wide">UIN AR-RANIRY BANDA ACEH</h1>
+                    <p class="text-xs text-yellow-300 font-semibold tracking-wider uppercase">Sistem Absensi Petugas Kebersihan</p>
+                </div>
+            </div>
+            <div class="flex items-center space-x-2">
+                <span id="connection-badge" class="px-3 py-1 text-xs rounded-full bg-yellow-500 text-black font-semibold shadow flex items-center gap-1.5">
+                    <span class="w-2.5 h-2.5 rounded-full bg-white animate-pulse"></span>
+                    <span id="connection-text">Mode Simulasi (Demo)</span>
+                </span>
+                <button id="btn-portal-display" onclick="switchView('display-monitor')" class="bg-accent text-primary px-3 py-1 rounded text-xs font-bold hover:bg-yellow-400 transition flex items-center gap-1">
+                    <i class="fa-solid fa-desktop"></i> Monitor Live
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- CONTENT APP (SPA RENDER AREA) -->
+    <main class="flex-grow max-w-7xl w-full mx-auto p-4 md:p-6">
+        <div id="alert-container" class="hidden mb-4"></div>
+
+        <!-- VIEW 1: LOGIN PORTAL -->
+        <section id="view-login" class="max-w-md mx-auto my-12">
+            
+            <!-- RUNNING TEXT BANNER (Diatas Kotak Portal Absensi) -->
+            <div id="running-info-banner" class="mb-4 bg-yellow-50 border border-yellow-200 text-yellow-800 rounded-xl overflow-hidden py-2.5 px-4 shadow-sm flex items-center relative">
+                <span class="bg-accent text-primary text-[10px] font-extrabold px-2 py-0.5 rounded mr-3 z-10 whitespace-nowrap flex items-center gap-1 shadow-sm">
+                    <i class="fa-solid fa-circle-info animate-pulse"></i> INFO UTAMA
+                </span>
+                <div class="relative w-full overflow-hidden whitespace-nowrap">
+                    <div id="running-text-content" class="animate-marquee font-medium text-xs">
+                        Selamat Datang di Sistem Absensi Petugas Kebersihan UIN Ar-Raniry Banda Aceh. Silakan lakukan absensi datang tepat waktu!
+                    </div>
+                </div>
+            </div>
+
+            <!-- Login Box -->
+            <div class="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
+                <div class="bg-primary p-6 text-white text-center relative overflow-hidden">
+                    <div class="absolute -right-10 -bottom-10 opacity-10 text-white text-9xl">
+                        <i class="fa-solid fa-mosque"></i>
+                    </div>
+                    <h2 class="text-xl font-bold">Portal Absensi</h2>
+                    <p class="text-xs text-gray-200 mt-1">Silakan masuk sesuai hak akses Anda</p>
+                </div>
+                
+                <div class="p-6 space-y-4">
+                    <!-- Role Switcher -->
+                    <div class="flex bg-gray-100 p-1 rounded-lg">
+                        <button id="tab-login-petugas" onclick="setLoginRole('petugas')" class="flex-1 py-2 text-center text-sm font-semibold rounded-md bg-white text-primary shadow-sm transition">
+                            <i class="fa-solid fa-user-tag mr-1.5"></i> Petugas
+                        </button>
+                        <button id="tab-login-admin" onclick="setLoginRole('admin')" class="flex-1 py-2 text-center text-sm font-semibold rounded-md text-gray-500 hover:text-gray-700 transition">
+                            <i class="fa-solid fa-user-shield mr-1.5"></i> Operator / Admin
+                        </button>
+                    </div>
+
+                    <form id="form-login" onsubmit="handleLoginSubmit(event)" class="space-y-4">
+                        <div>
+                            <label class="block text-xs font-bold uppercase tracking-wider text-gray-500 mb-1">Username</label>
+                            <div class="relative">
+                                <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400">
+                                    <i class="fa-solid fa-user"></i>
+                                </span>
+                                <input id="login-username" type="text" required class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition text-sm" placeholder="Masukkan username">
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-bold uppercase tracking-wider text-gray-500 mb-1">Password</label>
+                            <div class="relative">
+                                <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400">
+                                    <i class="fa-solid fa-lock"></i>
+                                </span>
+                                <input id="login-password" type="password" required class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition text-sm" placeholder="Masukkan password">
+                            </div>
+                        </div>
+
+                        <button type="submit" id="btn-login" class="w-full bg-primary text-white py-2.5 rounded-lg font-bold text-sm tracking-wide shadow-md bg-primary-hover transition flex items-center justify-center gap-2">
+                            <span>Masuk Sistem</span>
+                            <i class="fa-solid fa-arrow-right"></i>
+                        </button>
+                    </form>
+
+                    <div class="text-center pt-2">
+                        <p class="text-xs text-gray-400">Lupa password? Hubungi operator bagian administrasi UIN Ar-Raniry.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- VIEW 2: DASHBOARD PETUGAS -->
+        <section id="view-petugas-dashboard" class="hidden space-y-6">
+            <!-- Header User Profil -->
+            <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                <div class="flex items-center space-x-4">
+                    <div class="w-16 h-16 rounded-full bg-emerald-100 flex items-center justify-center text-primary text-2xl font-bold border-2 border-accent">
+                        <span id="petugas-avatar-text">PK</span>
+                    </div>
+                    <div>
+                        <h2 id="petugas-welcome" class="text-xl font-bold text-gray-900">Nama Petugas</h2>
+                        <p class="text-sm text-gray-500 flex items-center gap-1">
+                            <i class="fa-solid fa-map-location-dot color-accent"></i>
+                            <span id="petugas-lokasi">Gedung Rektorat</span>
+                        </p>
+                        <p class="text-xs text-gray-400" id="petugas-id-display">ID Petugas: P001</p>
+                    </div>
+                </div>
+                <div class="flex gap-2">
+                    <button onclick="handleLogout()" class="px-4 py-2 border border-red-200 text-red-600 rounded-xl text-sm font-semibold hover:bg-red-50 transition flex items-center gap-1.5">
+                        <i class="fa-solid fa-power-off"></i> Keluar
+                    </button>
+                </div>
+            </div>
+
+            <!-- Bagian Info & Announcement -->
+            <div id="petugas-announcement-banner" class="bg-yellow-50 border-l-4 border-yellow-500 p-4 rounded-r-xl hidden shadow-sm">
+                <div class="flex items-start">
+                    <div class="flex-shrink-0 text-yellow-600">
+                        <i class="fa-solid fa-bullhorn text-xl"></i>
+                    </div>
+                    <div class="ml-3">
+                        <h3 class="text-sm font-bold text-yellow-800">Pengumuman Terbaru</h3>
+                        <p class="text-xs text-yellow-700 mt-1" id="announcement-content">Tidak ada pengumuman hari ini.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tombol Aksi Absensi (Clock In / Clock Out) -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- PANEL ABSEN DATANG -->
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex flex-col justify-between space-y-4">
+                    <div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-xs font-bold uppercase tracking-wider text-emerald-600 bg-emerald-50 px-2.5 py-1 rounded-full">Absensi Masuk</span>
+                            <span class="text-xs text-gray-400"><i class="fa-regular fa-clock"></i> Batas: 07.30 WIB</span>
+                        </div>
+                        <h3 class="text-lg font-bold text-gray-800 mt-3">Jam Datang</h3>
+                        <p class="text-xs text-gray-400">Pastikan Anda sudah berada di lokasi kerja sebelum menekan tombol absen.</p>
+                        <div class="mt-4 bg-gray-50 p-4 rounded-xl text-center">
+                            <span id="time-display-datang" class="text-3xl font-extrabold text-gray-700">- - : - -</span>
+                        </div>
+                    </div>
+                    <button id="btn-absen-datang" onclick="triggerAbsen('datang')" class="w-full bg-primary text-white py-3 rounded-xl font-bold shadow-md bg-primary-hover transition flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-right-to-bracket"></i>
+                        <span>Absen Datang Sekarang</span>
+                    </button>
+                </div>
+
+                <!-- PANEL ABSEN PULANG -->
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex flex-col justify-between space-y-4">
+                    <div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-xs font-bold uppercase tracking-wider text-orange-600 bg-orange-50 px-2.5 py-1 rounded-full">Absensi Pulang</span>
+                            <span class="text-xs text-gray-400"><i class="fa-regular fa-clock"></i> Mulai: 16.00 WIB</span>
+                        </div>
+                        <h3 class="text-lg font-bold text-gray-800 mt-3">Jam Pulang</h3>
+                        <p class="text-xs text-gray-400">Tekan tombol ini saat jam kerja Anda sudah selesai.</p>
+                        <div class="mt-4 bg-gray-50 p-4 rounded-xl text-center">
+                            <span id="time-display-pulang" class="text-3xl font-extrabold text-gray-700">- - : - -</span>
+                        </div>
+                    </div>
+                    <button id="btn-absen-pulang" onclick="triggerAbsen('pulang')" class="w-full bg-gray-300 text-gray-600 py-3 rounded-xl font-bold cursor-not-allowed transition flex items-center justify-center gap-2" disabled>
+                        <i class="fa-solid fa-right-from-bracket"></i>
+                        <span>Absen Pulang Sekarang</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Rekap Kehadiran Bulanan Petugas -->
+            <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-md font-bold text-gray-900 flex items-center gap-2">
+                        <i class="fa-solid fa-calendar-check color-primary"></i>
+                        <span>Rekap Kehadiran Bulanan</span>
+                    </h3>
+                    <span class="text-xs font-semibold text-gray-500" id="rekap-bulan-name">Bulan Ini</span>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="bg-gray-50 border-b border-gray-100 text-xs text-gray-500 font-bold uppercase">
+                                <th class="p-3">Tanggal</th>
+                                <th class="p-3">Jam Datang</th>
+                                <th class="p-3">Jam Pulang</th>
+                                <th class="p-3">Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="petugas-table-riwayat-body" class="text-sm divide-y divide-gray-100">
+                            <!-- JS Renders Rows -->
+                            <tr>
+                                <td colspan="4" class="p-4 text-center text-gray-400 text-xs">Belum ada riwayat absensi.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- VIEW 3: DASHBOARD ADMIN -->
+        <section id="view-admin-dashboard" class="hidden space-y-6">
+            <!-- Header Admin -->
+            <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                <div>
+                    <h2 class="text-xl font-bold text-gray-900">Dashboard Administrasi & Operator</h2>
+                    <p class="text-xs text-gray-500">Kelola petugas, cetak laporan bulanan, dan kelola pengumuman.</p>
+                </div>
+                <div class="flex gap-2 flex-wrap">
+                    <button onclick="switchView('display-monitor')" class="bg-emerald-50 text-primary px-3 py-2 rounded-xl text-xs font-bold hover:bg-emerald-100 transition flex items-center gap-1">
+                        <i class="fa-solid fa-desktop"></i> Monitor
+                    </button>
+                    <button onclick="handleLogout()" class="px-4 py-2 border border-red-200 text-red-600 rounded-xl text-sm font-semibold hover:bg-red-50 transition flex items-center gap-1.5">
+                        <i class="fa-solid fa-power-off"></i> Keluar
+                    </button>
+                </div>
+            </div>
+
+            <!-- Tab Navigasi Admin -->
+            <div class="flex space-x-1 bg-gray-100 p-1 rounded-xl">
+                <button id="tab-admin-petugas" onclick="setAdminTab('petugas')" class="flex-1 py-2.5 text-center text-xs font-bold rounded-lg bg-white text-primary shadow-sm transition">
+                    <i class="fa-solid fa-users mr-1"></i> Data Petugas
+                </button>
+                <button id="tab-admin-rekap" onclick="setAdminTab('rekap')" class="flex-1 py-2.5 text-center text-xs font-bold rounded-lg text-gray-500 hover:text-gray-700 transition">
+                    <i class="fa-solid fa-print mr-1"></i> Rekap Laporan
+                </button>
+                <button id="tab-admin-pengumuman" onclick="setAdminTab('pengumuman')" class="flex-1 py-2.5 text-center text-xs font-bold rounded-lg text-gray-500 hover:text-gray-700 transition">
+                    <i class="fa-solid fa-bullhorn mr-1"></i> Pengumuman
+                </button>
+                <button id="tab-admin-config" onclick="setAdminTab('config')" class="flex-1 py-2.5 text-center text-xs font-bold rounded-lg text-gray-500 hover:text-gray-700 transition">
+                    <i class="fa-solid fa-gears mr-1"></i> API Config
+                </button>
+            </div>
+
+            <!-- ADMIN TAB 1: KELOLA PETUGAS -->
+            <div id="admin-panel-petugas" class="space-y-4">
+                <div class="flex justify-between items-center">
+                    <h3 class="text-md font-bold text-gray-900">Daftar Petugas Aktif</h3>
+                    <button onclick="openFormPetugasModal('create')" class="bg-primary text-white text-xs px-3 py-2 rounded-lg font-bold hover:bg-primary-hover transition flex items-center gap-1.5">
+                        <i class="fa-solid fa-plus"></i> Tambah Petugas
+                    </button>
+                </div>
+                <div class="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse">
+                            <thead>
+                                <tr class="bg-gray-50 border-b border-gray-100 text-xs text-gray-500 font-bold uppercase">
+                                    <th class="p-3">ID</th>
+                                    <th class="p-3">Nama Petugas</th>
+                                    <th class="p-3">Lokasi Kerja</th>
+                                    <th class="p-3">No. Telepon</th>
+                                    <th class="p-3">Username & Pass</th>
+                                    <th class="p-3 text-center">Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody id="admin-table-petugas-body" class="text-sm divide-y divide-gray-100">
+                                <!-- JS Renders Rows -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ADMIN TAB 2: REKAP DAN CETAK LAPORAN -->
+            <div id="admin-panel-rekap" class="hidden space-y-4">
+                <div class="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm space-y-4">
+                    <h3 class="text-md font-bold text-gray-900">Rekap Laporan Bulanan</h3>
+                    <div class="flex flex-col sm:flex-row gap-3">
+                        <div class="flex-1">
+                            <label class="block text-xs font-bold uppercase tracking-wider text-gray-500 mb-1">Pilih Bulan</label>
+                            <input id="admin-rekap-month-input" type="month" class="w-full p-2 border border-gray-300 rounded-lg text-sm focus:ring-primary focus:border-primary">
+                        </div>
+                        <div class="flex items-end gap-2">
+                            <button onclick="loadAdminRekapData()" class="bg-primary text-white text-sm px-4 py-2 rounded-lg font-bold hover:bg-primary-hover transition h-10 flex items-center gap-1.5">
+                                <i class="fa-solid fa-magnifying-glass"></i> Tampilkan
+                            </button>
+                            <button onclick="printLaporanAbsensi()" class="bg-accent text-primary text-sm px-4 py-2 rounded-lg font-bold hover:bg-yellow-400 transition h-10 flex items-center gap-1.5">
+                                <i class="fa-solid fa-print"></i> Cetak Laporan
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse" id="table-rekap-cetak">
+                            <thead>
+                                <tr class="bg-gray-50 border-b border-gray-100 text-xs text-gray-500 font-bold uppercase">
+                                    <th class="p-3">Nama Petugas</th>
+                                    <th class="p-3">Lokasi Kerja</th>
+                                    <th class="p-3 text-center">Tepat Waktu</th>
+                                    <th class="p-3 text-center">Terlambat</th>
+                                    <th class="p-3 text-center">Total Hadir</th>
+                                    <th class="p-3 text-center">Persentase</th>
+                                </tr>
+                            </thead>
+                            <tbody id="admin-table-rekap-body" class="text-sm divide-y divide-gray-100">
+                                <tr>
+                                    <td colspan="6" class="p-4 text-center text-gray-400 text-xs">Pilih bulan dan klik tampilkan untuk memuat data.</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ADMIN TAB 3: SETTING PENGUMUMAN & RUNNING TEXT -->
+            <div id="admin-panel-pengumuman" class="hidden space-y-6">
+                <!-- Running Text Settings Card -->
+                <div class="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm space-y-4">
+                    <div class="flex items-center gap-2 border-b pb-2">
+                        <i class="fa-solid fa-bullhorn text-amber-500 text-lg animate-bounce"></i>
+                        <h3 class="text-md font-bold text-gray-900">Pengaturan Teks Berjalan (Running Text)</h3>
+                    </div>
+                    <p class="text-xs text-gray-500">Teks berjalan ini akan ditampilkan tepat di atas kotak portal absensi untuk memberikan instruksi umum harian kepada seluruh petugas sebelum login.</p>
+                    <div class="space-y-3">
+                        <input id="admin-input-running-text" type="text" class="w-full p-2.5 border border-gray-300 rounded-lg text-sm focus:ring-primary focus:border-primary placeholder-gray-400" placeholder="Ketik teks pengumuman berjalan disini...">
+                        <button onclick="saveRunningTextSubmit()" class="bg-accent text-primary text-xs px-4 py-2 rounded-lg font-bold hover:bg-yellow-400 transition flex items-center gap-1.5 ml-auto shadow">
+                            <i class="fa-solid fa-floppy-disk"></i> Simpan Teks Berjalan
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Static Announcement Card -->
+                <div class="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm space-y-4">
+                    <div class="flex items-center gap-2 border-b pb-2">
+                        <i class="fa-solid fa-thumbtack text-emerald-600 text-lg"></i>
+                        <h3 class="text-md font-bold text-gray-900">Buat Pengumuman Papan Informasi (Dashboard)</h3>
+                    </div>
+                    <p class="text-xs text-gray-500">Pesan statis berdurasi lama yang diletakkan di dalam halaman dashboard utama masing-masing akun petugas.</p>
+                    <div class="space-y-3">
+                        <textarea id="admin-input-pengumuman" rows="3" class="w-full p-3 border border-gray-300 rounded-lg text-sm focus:ring-primary focus:border-primary placeholder-gray-400" placeholder="Ketik pengumuman penting..."></textarea>
+                        <button onclick="saveAnnouncementSubmit()" class="bg-primary text-white text-xs px-4 py-2 rounded-lg font-bold hover:bg-primary-hover transition flex items-center gap-1.5 ml-auto shadow">
+                            <i class="fa-solid fa-paper-plane"></i> Sebarkan Pengumuman
+                        </button>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 space-y-3">
+                    <h3 class="text-md font-bold text-gray-900">Arsip Pengumuman Aktif</h3>
+                    <div id="admin-list-pengumuman" class="space-y-2 divide-y divide-gray-100">
+                        <!-- JS Renders List -->
+                        <p class="text-xs text-gray-400">Belum ada pengumuman.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ADMIN TAB 4: API CONFIG -->
+            <div id="admin-panel-config" class="hidden space-y-4">
+                <div class="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm space-y-3">
+                    <h3 class="text-md font-bold text-gray-900 flex items-center gap-2">
+                        <i class="fa-solid fa-gears color-primary"></i>
+                        <span>Konfigurasi Integrasi Google Apps Script</span>
+                    </h3>
+                    <p class="text-xs text-gray-500">Hubungkan aplikasi frontend ini dengan data spreadsheet Anda menggunakan Web App URL dari Google Apps Script.</p>
+                    <div class="space-y-2">
+                        <label class="block text-xs font-bold uppercase text-gray-500">Google Apps Script Web App URL</label>
+                        <input id="admin-config-url-input" type="text" class="w-full p-2.5 border border-gray-300 rounded-lg text-sm font-mono" placeholder="https://script.google.com/macros/s/.../exec">
+                    </div>
+                    <div class="flex gap-2 justify-end pt-2">
+                        <button onclick="testConnection()" class="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg text-xs font-bold hover:bg-gray-100 transition">Test Koneksi</button>
+                        <button onclick="saveApiUrl()" class="bg-primary text-white text-xs px-4 py-2 rounded-lg font-bold hover:bg-primary-hover transition">Simpan & Integrasikan</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- VIEW 4: DISPLAY MONITOR REAL-TIME -->
+        <section id="view-display-monitor" class="hidden space-y-6">
+            <!-- Header Monitor -->
+            <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex flex-col md:flex-row justify-between items-center gap-4">
+                <div class="text-center md:text-left">
+                    <h2 class="text-xl font-black text-gray-900 tracking-wide flex items-center justify-center md:justify-start gap-2">
+                        <span class="inline-block w-3 h-3 rounded-full bg-red-600 animate-ping"></span>
+                        <span>DISPLAY REAL-TIME MONITOR ABSENSI</span>
+                    </h2>
+                    <p class="text-xs text-gray-500" id="monitor-tanggal-hari-ini">Hari Ini: ...</p>
+                </div>
+                <div class="flex gap-2">
+                    <button onclick="loadDisplayMonitorData()" class="bg-gray-100 text-gray-700 p-2.5 rounded-lg text-xs font-bold hover:bg-gray-200 transition">
+                        <i class="fa-solid fa-arrows-rotate"></i> Refresh Data
+                    </button>
+                    <button id="btn-back-from-monitor" onclick="backFromMonitor()" class="bg-primary text-white px-4 py-2.5 rounded-lg text-xs font-bold hover:bg-primary-hover transition flex items-center gap-1">
+                        <i class="fa-solid fa-house"></i> Kembali ke Portal
+                    </button>
+                </div>
+            </div>
+
+            <!-- Panel Statistik Ringkas -->
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
+                <div class="bg-white p-4 rounded-xl shadow-sm border-b-4 border-emerald-500">
+                    <p class="text-xs font-bold text-gray-400 uppercase tracking-wider">Hadir Tepat Waktu</p>
+                    <p class="text-3xl font-extrabold text-emerald-600 mt-1" id="stat-tepat-waktu">0</p>
+                </div>
+                <div class="bg-white p-4 rounded-xl shadow-sm border-b-4 border-amber-500">
+                    <p class="text-xs font-bold text-gray-400 uppercase tracking-wider">Hadir Terlambat</p>
+                    <p class="text-3xl font-extrabold text-amber-600 mt-1" id="stat-terlambat">0</p>
+                </div>
+                <div class="bg-white p-4 rounded-xl shadow-sm border-b-4 border-gray-400">
+                    <p class="text-xs font-bold text-gray-400 uppercase tracking-wider">Belum Absensi</p>
+                    <p class="text-3xl font-extrabold text-gray-500 mt-1" id="stat-belum-hadir">0</p>
+                </div>
+                <div class="bg-white p-4 rounded-xl shadow-sm border-b-4 border-primary">
+                    <p class="text-xs font-bold text-gray-400 uppercase tracking-wider">Total Petugas</p>
+                    <p class="text-3xl font-extrabold color-primary mt-1" id="stat-total-petugas">0</p>
+                </div>
+            </div>
+
+            <!-- Layout 2 Kolom Monitor -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <!-- Kolom 1: Sudah Hadir (Datang Tepat Waktu / Terlambat) -->
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-emerald-100 flex flex-col space-y-4">
+                    <div class="border-b pb-3 flex justify-between items-center">
+                        <h3 class="font-extrabold text-gray-900 flex items-center gap-2 text-emerald-700">
+                            <i class="fa-solid fa-circle-check"></i>
+                            <span>PETUGAS HADIR HARI INI</span>
+                        </h3>
+                        <span id="badge-hadir-count" class="bg-emerald-100 text-emerald-800 text-xs font-bold px-2.5 py-1 rounded-full">0 Orang</span>
+                    </div>
+                    <div class="overflow-y-auto max-h-[450px] space-y-2.5 pr-1" id="monitor-container-hadir">
+                        <!-- JS Renders Items -->
+                        <p class="text-sm text-gray-400 text-center py-6">Belum ada petugas yang melakukan absensi hari ini.</p>
+                    </div>
+                </div>
+
+                <!-- Kolom 2: Belum Absensi -->
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-red-100 flex flex-col space-y-4">
+                    <div class="border-b pb-3 flex justify-between items-center">
+                        <h3 class="font-extrabold text-gray-900 flex items-center gap-2 text-red-700">
+                            <i class="fa-solid fa-circle-xmark"></i>
+                            <span>BELUM HADIR / ALFABETIS</span>
+                        </h3>
+                        <span id="badge-belum-count" class="bg-red-100 text-red-800 text-xs font-bold px-2.5 py-1 rounded-full">0 Orang</span>
+                    </div>
+                    <div class="overflow-y-auto max-h-[450px] space-y-2.5 pr-1" id="monitor-container-belum-hadir">
+                        <!-- JS Renders Items -->
+                        <p class="text-sm text-gray-400 text-center py-6">Semua petugas telah hadir.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- FOOTER -->
+    <footer class="bg-gray-800 text-gray-400 text-center py-6 border-t border-gray-700 text-xs space-y-2 mt-auto">
+        <p>&copy; 2026 Universitas Islam Negeri Ar-Raniry Banda Aceh. All Rights Reserved.</p>
+        <p class="text-gray-500">Sistem Informasi Manajemen Kebersihan Kampus | Dikembangkan sesuai Standar Keamanan & Responsif Android</p>
+    </footer>
+
+    <!-- MODAL POPUP: FORM PETUGAS (CREATE & UPDATE) -->
+    <div id="modal-petugas" class="hidden fixed inset-0 z-50 overflow-y-auto bg-black bg-opacity-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-md w-full shadow-2xl overflow-hidden border border-gray-100">
+            <div class="bg-primary text-white p-4 flex justify-between items-center">
+                <h3 id="modal-petugas-title" class="font-bold">Tambah / Edit Petugas</h3>
+                <button onclick="closeFormPetugasModal()" class="text-white hover:text-gray-200">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+            </div>
+            <form onsubmit="handlePetugasSubmit(event)" class="p-5 space-y-4">
+                <input type="hidden" id="form-petugas-id">
+                <input type="hidden" id="form-petugas-action">
+                
+                <div>
+                    <label class="block text-xs font-bold uppercase text-gray-500 mb-1">Nama Lengkap</label>
+                    <input type="text" id="form-petugas-nama" required class="w-full p-2 border border-gray-300 rounded-lg text-sm">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold uppercase text-gray-500 mb-1">Username Akun</label>
+                    <input type="text" id="form-petugas-username" required class="w-full p-2 border border-gray-300 rounded-lg text-sm">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold uppercase text-gray-500 mb-1">Password</label>
+                    <input type="text" id="form-petugas-password" required class="w-full p-2 border border-gray-300 rounded-lg text-sm">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold uppercase text-gray-500 mb-1">Lokasi Penempatan Kerja</label>
+                    <select id="form-petugas-lokasi" required class="w-full p-2 border border-gray-300 rounded-lg text-sm bg-white">
+                        <option value="Gedung Rektorat">Gedung Rektorat</option>
+                        <option value="Gedung FEBI">Gedung FEBI</option>
+                        <option value="Gedung Pascasarjana">Gedung Pascasarjana</option>
+                        <option value="Gedung Sains & Teknologi">Gedung Sains & Teknologi</option>
+                        <option value="Perpustakaan Pusat">Perpustakaan Pusat</option>
+                        <option value="Masjid Fathun Qarib">Masjid Fathun Qarib</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs font-bold uppercase text-gray-500 mb-1">No. WhatsApp / HP</label>
+                    <input type="text" id="form-petugas-telepon" required class="w-full p-2 border border-gray-300 rounded-lg text-sm" placeholder="Contoh: 08123456789">
+                </div>
+
+                <div class="flex justify-end gap-2 pt-2">
+                    <button type="button" onclick="closeFormPetugasModal()" class="px-4 py-2 border rounded-lg text-xs text-gray-600 hover:bg-gray-100">Batal</button>
+                    <button type="submit" class="bg-primary text-white text-xs px-4 py-2 rounded-lg font-bold hover:bg-primary-hover">Simpan Data</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+
+    <!-- ============================================ -->
+    <!-- LOGIC SYSTEM & SCRIPT SINKRONISASI -->
+    <!-- ============================================ -->
+    <script>
+        // === STATE & LOCAL DATA (SIMULATION BACKUP) ===
+        let MOCK_PETUGAS = [
+            { id_petugas: "P001", nama: "Sulaiman Syah", username: "sulaiman", password: "123", lokasi_kerja: "Gedung Rektorat", telepon: "085211223344" },
+            { id_petugas: "P002", nama: "Aisyah Dahlan", username: "aisyah", password: "123", lokasi_kerja: "Gedung FEBI", telepon: "085222334455" },
+            { id_petugas: "P003", nama: "Zulkifli Amin", username: "zulkifli", password: "123", lokasi_kerja: "Gedung Pascasarjana", telepon: "085233445566" },
+            { id_petugas: "P004", nama: "Fatimah Zahra", username: "fatimah", password: "123", lokasi_kerja: "Gedung Sains & Teknologi", telepon: "085244556677" }
+        ];
+
+        let MOCK_ABSENSI = [
+            { id_absen: "A1", id_petugas: "P001", tanggal: "2026-06-18", jam_datang: "07:15:23", jam_pulang: "16:05:00", status: "Tepat Waktu", koordinat_datang: "5.5701, 95.3695", koordinat_pulang: "5.5701, 95.3695" },
+            { id_absen: "A2", id_petugas: "P002", tanggal: "2026-06-18", jam_datang: "07:42:10", jam_pulang: "16:02:11", status: "Terlambat", koordinat_datang: "5.5703, 95.3698", koordinat_pulang: "5.5703, 95.3698" }
+        ];
+
+        let MOCK_PENGUMUMAN = [
+            { id: "ANN-1", tanggal: "2026-06-19", isi: "Diberitahukan kepada seluruh petugas kebersihan UIN Ar-Raniry agar bersiap melakukan gotong royong menyambut wisuda akbar esok hari." }
+        ];
+
+        // Running Text Content
+        let runningText = "Selamat Datang di Sistem Absensi Petugas Kebersihan UIN Ar-Raniry Banda Aceh. Silakan lakukan absensi datang tepat waktu!";
+
+        // System Variables
+        let currentUser = null;
+        let activeLoginRole = "petugas";
+        let isLiveMode = false;
+        let gasWebappUrl = "";
+
+        // On Load Initializer
+        window.onload = function() {
+            // Load credentials and URL config from localStorage
+            const savedUrl = localStorage.getItem("gas_webapp_url");
+            if (savedUrl) {
+                gasWebappUrl = savedUrl;
+                isLiveMode = true;
+                updateConnectionState(true);
+            } else {
+                updateConnectionState(false);
+            }
+
+            // Load saved running text from localStorage
+            const savedRunningText = localStorage.getItem("running_text_content");
+            if (savedRunningText) {
+                runningText = savedRunningText;
+            }
+            updateRunningTextUi();
+
+            // Atur default input bulan rekap ke bulan saat ini
+            const today = new Date();
+            const year = today.getFullYear();
+            const month = String(today.getMonth() + 1).padStart(2, '0');
+            document.getElementById("admin-rekap-month-input").value = `${year}-${month}`;
+
+            // Sync database lokal jika ada di localStorage (supaya simulasi interaktif)
+            if (!localStorage.getItem("db_petugas")) {
+                saveToLocalDb();
+            } else {
+                loadFromLocalDb();
+            }
+
+            // Default display time ticking
+            startClockTicking();
+        };
+
+        function saveToLocalDb() {
+            localStorage.setItem("db_petugas", JSON.stringify(MOCK_PETUGAS));
+            localStorage.setItem("db_absensi", JSON.stringify(MOCK_ABSENSI));
+            localStorage.setItem("db_pengumuman", JSON.stringify(MOCK_PENGUMUMAN));
+        }
+
+        function loadFromLocalDb() {
+            MOCK_PETUGAS = JSON.parse(localStorage.getItem("db_petugas"));
+            MOCK_ABSENSI = JSON.parse(localStorage.getItem("db_absensi"));
+            MOCK_PENGUMUMAN = JSON.parse(localStorage.getItem("db_pengumuman"));
+        }
+
+        function updateConnectionState(live) {
+            const badge = document.getElementById("connection-badge");
+            const text = document.getElementById("connection-text");
+            if (live) {
+                badge.className = "px-3 py-1 text-xs rounded-full bg-emerald-600 text-white font-semibold shadow flex items-center gap-1.5";
+                text.textContent = "Koneksi Live Google Sheets";
+            } else {
+                badge.className = "px-3 py-1 text-xs rounded-full bg-yellow-500 text-black font-semibold shadow flex items-center gap-1.5";
+                text.textContent = "Mode Simulasi (Demo)";
+            }
+        }
+
+        // Teks Berjalan Updater
+        function updateRunningTextUi() {
+            const el = document.getElementById("running-text-content");
+            if (el) el.textContent = runningText;
+            const inputEl = document.getElementById("admin-input-running-text");
+            if (inputEl) inputEl.value = runningText;
+        }
+
+        // Clock display ticking
+        function startClockTicking() {
+            setInterval(() => {
+                const clockElements = [document.getElementById("time-display-datang"), document.getElementById("time-display-pulang")];
+                const now = new Date();
+                const timeString = now.toTimeString().split(' ')[0];
+                clockElements.forEach(el => {
+                    if (el && el.innerText.includes("-")) {
+                        // Keep ticking placeholder
+                    }
+                });
+            }, 1000);
+        }
+
+        // Custom Dynamic Alerts
+        function showAlert(message, type = "success") {
+            const container = document.getElementById("alert-container");
+            container.className = `p-4 mb-4 rounded-xl text-xs font-bold shadow-md flex items-center gap-2 ${
+                type === "success" ? "bg-emerald-100 text-emerald-800" : "bg-red-100 text-red-800"
+            }`;
+            container.innerHTML = `
+                <i class="fa-solid ${type === 'success' ? 'fa-circle-check' : 'fa-triangle-exclamation'} text-sm"></i>
+                <span>${message}</span>
+            `;
+            container.classList.remove("hidden");
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+            setTimeout(() => {
+                container.classList.add("hidden");
+            }, 5000);
+        }
+
+        // Navigation Views (SPA switching)
+        function switchView(viewId) {
+            const views = ["view-login", "view-petugas-dashboard", "view-admin-dashboard", "view-display-monitor"];
+            views.forEach(v => {
+                document.getElementById(v).classList.add("hidden");
+            });
+            document.getElementById(`view-${viewId}`).classList.remove("hidden");
+            
+            // Adjust home portal button visibility
+            if (viewId === "display-monitor") {
+                document.getElementById("btn-portal-display").classList.add("hidden");
+            } else {
+                document.getElementById("btn-portal-display").classList.remove("hidden");
+            }
+
+            // Load data accordingly
+            if (viewId === "display-monitor") {
+                loadDisplayMonitorData();
+            }
+        }
+
+        function backFromMonitor() {
+            if (currentUser) {
+                if (currentUser.role === "admin") {
+                    switchView("admin-dashboard");
+                } else {
+                    switchView("petugas-dashboard");
+                }
+            } else {
+                switchView("login");
+            }
+        }
+
+        // Switch role on Login Card
+        function setLoginRole(role) {
+            activeLoginRole = role;
+            const btnPetugas = document.getElementById("tab-login-petugas");
+            const btnAdmin = document.getElementById("tab-login-admin");
+            
+            if (role === "petugas") {
+                btnPetugas.className = "flex-1 py-2 text-center text-sm font-semibold rounded-md bg-white text-primary shadow-sm transition";
+                btnAdmin.className = "flex-1 py-2 text-center text-sm font-semibold rounded-md text-gray-500 hover:text-gray-700 transition";
+            } else {
+                btnAdmin.className = "flex-1 py-2 text-center text-sm font-semibold rounded-md bg-white text-primary shadow-sm transition";
+                btnPetugas.className = "flex-1 py-2 text-center text-sm font-semibold rounded-md text-gray-500 hover:text-gray-700 transition";
+            }
+        }
+
+        // API Call Wrapper with Retries & Error Handling
+        async function fetchAPI(url, options = {}, retries = 5, delay = 1000) {
+            for (let i = 0; i < retries; i++) {
+                try {
+                    const response = await fetch(url, options);
+                    if (!response.ok) throw new Error("Jaringan error");
+                    return await response.json();
+                } catch (err) {
+                    if (i === retries - 1) throw err;
+                    await new Promise(res => setTimeout(res, delay * Math.pow(2, i))); // Exponential backoff
+                }
+            }
+        }
+
+        // LOGIN HANDLER
+        async function handleLoginSubmit(e) {
+            e.preventDefault();
+            const userIn = document.getElementById("login-username").value;
+            const passIn = document.getElementById("login-password").value;
+
+            document.getElementById("btn-login").innerHTML = `<i class="fa-solid fa-spinner animate-spin"></i> Memverifikasi...`;
+
+            if (isLiveMode) {
+                try {
+                    const res = await fetchAPI(gasWebappUrl, {
+                        method: "POST",
+                        body: JSON.stringify({
+                            action: "login",
+                            username: userIn,
+                            password: passIn,
+                            role: activeLoginRole
+                        })
+                    });
+
+                    if (res.success) {
+                        currentUser = res.user;
+                        postLoginRedirect();
+                    } else {
+                        showAlert(res.message || "Gagal masuk.", "error");
+                    }
+                } catch (err) {
+                    showAlert("Kesalahan jaringan API Google Sheets. Melakukan bypass simulasi lokal...", "error");
+                    simulatedLogin(userIn, passIn);
+                }
+            } else {
+                simulatedLogin(userIn, passIn);
+            }
+            document.getElementById("btn-login").innerHTML = `<span>Masuk Sistem</span> <i class="fa-solid fa-arrow-right"></i>`;
+        }
+
+        function simulatedLogin(username, password) {
+            if (activeLoginRole === "admin") {
+                // Password admin diganti menjadi 1122 sesuai instruksi
+                if (username === "admin" && password === "1122") {
+                    currentUser = { username: "admin", nama: "Operator Rektorat", role: "admin" };
+                    postLoginRedirect();
+                } else {
+                    showAlert("Kredensial admin salah. Gunakan username 'admin' dan password '1122' untuk simulasi.", "error");
+                }
+            } else {
+                const user = MOCK_PETUGAS.find(p => p.username === username && p.password === password);
+                if (user) {
+                    currentUser = { ...user, role: "petugas" };
+                    postLoginRedirect();
+                } else {
+                    showAlert("Username atau password petugas tidak terdaftar.", "error");
+                }
+            }
+        }
+
+        function postLoginRedirect() {
+            showAlert(`Selamat datang kembali, ${currentUser.nama}!`, "success");
+            if (currentUser.role === "admin") {
+                switchView("admin-dashboard");
+                setAdminTab("petugas");
+            } else {
+                switchView("petugas-dashboard");
+                loadPetugasDashboardData();
+            }
+        }
+
+        function handleLogout() {
+            currentUser = null;
+            document.getElementById("login-username").value = "";
+            document.getElementById("login-password").value = "";
+            showAlert("Anda telah keluar dari sistem.", "success");
+            switchView("login");
+        }
+
+        // ============================================
+        // LOGIC FOR PETUGAS
+        // ============================================
+
+        function loadPetugasDashboardData() {
+            document.getElementById("petugas-welcome").textContent = currentUser.nama;
+            document.getElementById("petugas-lokasi").textContent = currentUser.lokasi_kerja;
+            document.getElementById("petugas-id-display").textContent = "ID Petugas: " + currentUser.id_petugas;
+            document.getElementById("petugas-avatar-text").textContent = currentUser.nama.substring(0, 2).toUpperCase();
+
+            // Set default date di rekap
+            const dateStr = new Date().toLocaleString('id-ID', { month: 'long', year: 'numeric' });
+            document.getElementById("rekap-bulan-name").textContent = dateStr;
+
+            // Load announcements
+            renderPetugasAnnouncement();
+
+            if (isLiveMode) {
+                syncPetugasDashboardLive();
+            } else {
+                syncPetugasDashboardSimulated();
+            }
+        }
+
+        function renderPetugasAnnouncement() {
+            const banner = document.getElementById("petugas-announcement-banner");
+            const content = document.getElementById("announcement-content");
+            if (MOCK_PENGUMUMAN.length > 0) {
+                banner.classList.remove("hidden");
+                content.textContent = `[${MOCK_PENGUMUMAN[0].tanggal}] ${MOCK_PENGUMUMAN[0].isi}`;
+            } else {
+                banner.classList.add("hidden");
+            }
+        }
+
+        async function syncPetugasDashboardLive() {
+            try {
+                const res = await fetchAPI(gasWebappUrl, {
+                    method: "POST",
+                    body: JSON.stringify({ action: "getStaffDashboard", id_petugas: currentUser.id_petugas })
+                });
+
+                if (res.success) {
+                    updatePetugasDashboardUi(res.statusHariIni, res.riwayat);
+                }
+            } catch (err) {
+                showAlert("Gagal sinkronisasi data dari Google Sheets. Menampilkan simulasi offline.", "error");
+                syncPetugasDashboardSimulated();
+            }
+        }
+
+        function syncPetugasDashboardSimulated() {
+            const todayStr = new Date().toISOString().substring(0, 10);
+            const riwayatUser = MOCK_ABSENSI.filter(a => a.id_petugas === currentUser.id_petugas);
+            
+            const todayAbsen = riwayatUser.find(a => a.tanggal === todayStr);
+            const statusHariIni = {
+                datang: todayAbsen ? todayAbsen.jam_datang : null,
+                pulang: todayAbsen ? todayAbsen.jam_pulang : null
+            };
+
+            const riwayatRender = [...riwayatUser].reverse();
+            updatePetugasDashboardUi(statusHariIni, riwayatRender);
+        }
+
+        function updatePetugasDashboardUi(statusHariIni, riwayat) {
+            // Update Jam Datang panel
+            const clockInEl = document.getElementById("time-display-datang");
+            const btnDatang = document.getElementById("btn-absen-datang");
+            if (statusHariIni.datang) {
+                clockInEl.textContent = statusHariIni.datang;
+                clockInEl.className = "text-3xl font-extrabold text-emerald-600";
+                btnDatang.disabled = true;
+                btnDatang.className = "w-full bg-emerald-100 text-emerald-700 py-3 rounded-xl font-bold cursor-not-allowed transition flex items-center justify-center gap-2";
+                btnDatang.innerHTML = `<i class="fa-solid fa-circle-check"></i> Sudah Absen Masuk`;
+            } else {
+                clockInEl.textContent = "- - : - -";
+                clockInEl.className = "text-3xl font-extrabold text-gray-400";
+                btnDatang.disabled = false;
+                btnDatang.className = "w-full bg-primary text-white py-3 rounded-xl font-bold shadow-md bg-primary-hover transition flex items-center justify-center gap-2";
+                btnDatang.innerHTML = `<i class="fa-solid fa-right-to-bracket"></i> Absen Datang Sekarang`;
+            }
+
+            // Update Jam Pulang panel
+            const clockOutEl = document.getElementById("time-display-pulang");
+            const btnPulang = document.getElementById("btn-absen-pulang");
+
+            // Aturan absensi pulang: Hanya aktif jika sudah absen datang & (Simulasi membolehkan pulang kapan saja untuk kemudahan demo)
+            if (statusHariIni.datang) {
+                if (statusHariIni.pulang) {
+                    clockOutEl.textContent = statusHariIni.pulang;
+                    clockOutEl.className = "text-3xl font-extrabold text-emerald-600";
+                    btnPulang.disabled = true;
+                    btnPulang.className = "w-full bg-emerald-100 text-emerald-700 py-3 rounded-xl font-bold cursor-not-allowed transition flex items-center justify-center gap-2";
+                    btnPulang.innerHTML = `<i class="fa-solid fa-circle-check"></i> Sudah Absen Pulang`;
+                } else {
+                    clockOutEl.textContent = "- - : - -";
+                    clockOutEl.className = "text-3xl font-extrabold text-gray-400";
+                    btnPulang.disabled = false;
+                    btnPulang.className = "w-full bg-orange-600 text-white py-3 rounded-xl font-bold shadow-md hover:bg-orange-700 transition flex items-center justify-center gap-2";
+                    btnPulang.innerHTML = `<i class="fa-solid fa-right-from-bracket"></i> Absen Pulang Sekarang`;
+                }
+            } else {
+                clockOutEl.textContent = "- - : - -";
+                clockOutEl.className = "text-3xl font-extrabold text-gray-400";
+                btnPulang.disabled = true;
+                btnPulang.className = "w-full bg-gray-200 text-gray-400 py-3 rounded-xl font-bold cursor-not-allowed transition flex items-center justify-center gap-2";
+                btnPulang.innerHTML = `<i class="fa-solid fa-lock"></i> Absen Datang Dahulu`;
+            }
+
+            // Render Table Riwayat
+            const tbody = document.getElementById("petugas-table-riwayat-body");
+            tbody.innerHTML = "";
+            if (riwayat.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="4" class="p-4 text-center text-gray-400 text-xs">Belum ada riwayat absensi bulan ini.</td></tr>`;
+            } else {
+                riwayat.forEach(row => {
+                    const badgeClass = row.status === "Tepat Waktu" ? "bg-emerald-100 text-emerald-800" : "bg-amber-100 text-amber-800";
+                    tbody.innerHTML += `
+                        <tr class="hover:bg-gray-50 transition">
+                            <td class="p-3 font-semibold text-xs text-gray-600">${formatDateIndo(row.tanggal)}</td>
+                            <td class="p-3 text-xs text-gray-700">${row.jam_datang || '-'}</td>
+                            <td class="p-3 text-xs text-gray-700">${row.jam_pulang || '-'}</td>
+                            <td class="p-3">
+                                <span class="px-2 py-1 text-[10px] font-extrabold rounded-full ${badgeClass}">${row.status}</span>
+                            </td>
+                        </tr>
+                    `;
+                });
+            }
+        }
+
+        // TRIGGER GEOLOCATION & RECORD ABSENCE
+        function triggerAbsen(type) {
+            if (navigator.geolocation) {
+                showAlert("Sedang mengunci lokasi koordinat GPS Anda...", "success");
+                navigator.geolocation.getCurrentPosition(
+                    (position) => {
+                        const koordinat = `${position.coords.latitude}, ${position.coords.longitude}`;
+                        executeAbsen(type, koordinat);
+                    },
+                    (error) => {
+                        // Jika GPS dinonaktifkan / diblokir, tetap izinkan absen dengan fallback koordinat UIN Ar-Raniry
+                        showAlert("Izin GPS ditolak atau tidak tersedia. Menggunakan penentuan lokasi cadangan UIN.", "error");
+                        executeAbsen(type, "5.5701, 95.3695"); // Koordinat Pusat Kampus UIN Ar-Raniry
+                    }
+                );
+            } else {
+                executeAbsen(type, "5.5701, 95.3695");
+            }
+        }
+
+        async function executeAbsen(type, koordinat) {
+            const endpoint = type === "datang" ? "clockIn" : "clockOut";
+            
+            if (isLiveMode) {
+                try {
+                    const res = await fetchAPI(gasWebappUrl, {
+                        method: "POST",
+                        body: JSON.stringify({
+                            action: endpoint,
+                            id_petugas: currentUser.id_petugas,
+                            koordinat: koordinat
+                        })
+                    });
+
+                    if (res.success) {
+                        showAlert(res.message, "success");
+                        loadPetugasDashboardData();
+                    } else {
+                        showAlert(res.message, "error");
+                    }
+                } catch (err) {
+                    showAlert("Koneksi gagal saat absensi. Melakukan fallback absensi lokal.", "error");
+                    executeAbsenSimulated(type, koordinat);
+                }
+            } else {
+                executeAbsenSimulated(type, koordinat);
+            }
+        }
+
+        function executeAbsenSimulated(type, koordinat) {
+            const todayStr = new Date().toISOString().substring(0, 10);
+            const nowTimeStr = new Date().toTimeString().split(' ')[0];
+
+            if (type === "datang") {
+                const limitTime = "07:30:00";
+                const status = nowTimeStr > limitTime ? "Terlambat" : "Tepat Waktu";
+                
+                MOCK_ABSENSI.push({
+                    id_absen: "A-" + new Date().getTime(),
+                    id_petugas: currentUser.id_petugas,
+                    tanggal: todayStr,
+                    jam_datang: nowTimeStr,
+                    jam_pulang: "",
+                    status: status,
+                    koordinat_datang: koordinat,
+                    koordinat_pulang: ""
+                });
+                showAlert(`Absensi datang berhasil disimpan [Simulasi] pukul ${nowTimeStr} (${status}).`, "success");
+            } else {
+                const record = MOCK_ABSENSI.find(a => a.id_petugas === currentUser.id_petugas && a.tanggal === todayStr);
+                if (record) {
+                    record.jam_pulang = nowTimeStr;
+                    record.koordinat_pulang = koordinat;
+                    showAlert(`Absensi pulang berhasil disimpan [Simulasi] pukul ${nowTimeStr}.`, "success");
+                }
+            }
+            saveToLocalDb();
+            loadPetugasDashboardData();
+        }
+
+
+        // ============================================
+        // LOGIC FOR ADMIN & OPERATOR
+        // ============================================
+
+        function setAdminTab(tabName) {
+            const tabs = ["petugas", "rekap", "pengumuman", "config"];
+            tabs.forEach(t => {
+                document.getElementById(`tab-admin-${t}`).className = "flex-1 py-2.5 text-center text-xs font-bold rounded-lg text-gray-500 hover:text-gray-700 transition";
+                document.getElementById(`admin-panel-${t}`).classList.add("hidden");
+            });
+
+            document.getElementById(`tab-admin-${tabName}`).className = "flex-1 py-2.5 text-center text-xs font-bold rounded-lg bg-white text-primary shadow-sm transition";
+            document.getElementById(`admin-panel-${tabName}`).classList.remove("hidden");
+
+            // Dispatch load
+            if (tabName === "petugas") {
+                loadAdminStaffData();
+            } else if (tabName === "pengumuman") {
+                loadAdminAnnouncements();
+                // Set isi input teks berjalan di admin panel
+                document.getElementById("admin-input-running-text").value = runningText;
+            } else if (tabName === "config") {
+                document.getElementById("admin-config-url-input").value = gasWebappUrl;
+            }
+        }
+
+        async function loadAdminStaffData() {
+            const tbody = document.getElementById("admin-table-petugas-body");
+            tbody.innerHTML = `<tr><td colspan="6" class="p-4 text-center"><i class="fa-solid fa-spinner animate-spin"></i> Memuat data petugas...</td></tr>`;
+
+            let staffList = [];
+            if (isLiveMode) {
+                try {
+                    const res = await fetch(`${gasWebappUrl}?action=getStaffList`).then(r => r.json());
+                    if (res.success) staffList = res.list;
+                } catch (err) {
+                    staffList = MOCK_PETUGAS;
+                }
+            } else {
+                staffList = MOCK_PETUGAS;
+            }
+
+            tbody.innerHTML = "";
+            if (staffList.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="6" class="p-4 text-center text-gray-400">Belum ada petugas terdaftar.</td></tr>`;
+            } else {
+                staffList.forEach(p => {
+                    tbody.innerHTML += `
+                        <tr class="hover:bg-gray-50 transition">
+                            <td class="p-3 font-bold text-xs text-primary">${p.id_petugas}</td>
+                            <td class="p-3 font-semibold text-xs text-gray-800">${p.nama}</td>
+                            <td class="p-3 text-xs text-gray-600"><span class="px-2 py-0.5 bg-gray-100 rounded">${p.lokasi_kerja}</span></td>
+                            <td class="p-3 text-xs text-gray-600">${p.telepon}</td>
+                            <td class="p-3 text-xs font-mono text-gray-500">${p.username} / ${p.password}</td>
+                            <td class="p-3 text-center space-x-1">
+                                <button onclick="openFormPetugasModal('update', '${p.id_petugas}', '${p.nama}', '${p.username}', '${p.password}', '${p.lokasi_kerja}', '${p.telepon}')" class="text-blue-600 hover:text-blue-800 p-1 text-xs font-semibold" title="Edit Profil"><i class="fa-regular fa-pen-to-square"></i> Edit</button>
+                                <button onclick="deletePetugasSubmit('${p.id_petugas}')" class="text-red-600 hover:text-red-800 p-1 text-xs font-semibold" title="Hapus"><i class="fa-regular fa-trash-can"></i> Hapus</button>
+                            </td>
+                        </tr>
+                    `;
+                });
+            }
+        }
+
+        // CRUD MODAL ACTIONS
+        function openFormPetugasModal(action, id = "", nama = "", username = "", password = "", lokasi = "Gedung Rektorat", telp = "") {
+            document.getElementById("form-petugas-action").value = action;
+            document.getElementById("form-petugas-id").value = id;
+            document.getElementById("form-petugas-nama").value = nama;
+            document.getElementById("form-petugas-username").value = username;
+            document.getElementById("form-petugas-password").value = password;
+            document.getElementById("form-petugas-lokasi").value = lokasi;
+            document.getElementById("form-petugas-telepon").value = telp;
+
+            document.getElementById("modal-petugas-title").textContent = action === 'create' ? 'Tambah Petugas Kebersihan Baru' : 'Edit Kredensial Petugas';
+            document.getElementById("modal-petugas").classList.remove("hidden");
+        }
+
+        function closeFormPetugasModal() {
+            document.getElementById("modal-petugas").classList.add("hidden");
+        }
+
+        async function handlePetugasSubmit(e) {
+            e.preventDefault();
+            const action = document.getElementById("form-petugas-action").value;
+            const id = document.getElementById("form-petugas-id").value;
+            const nama = document.getElementById("form-petugas-nama").value;
+            const username = document.getElementById("form-petugas-username").value;
+            const password = document.getElementById("form-petugas-password").value;
+            const lokasi = document.getElementById("form-petugas-lokasi").value;
+            const telp = document.getElementById("form-petugas-telepon").value;
+
+            const payload = {
+                action: "manageStaff",
+                subAction: action,
+                id_petugas: id,
+                nama: nama,
+                username: username,
+                password: password,
+                lokasi_kerja: lokasi,
+                telepon: telp
+            };
+
+            if (isLiveMode) {
+                try {
+                    const res = await fetchAPI(gasWebappUrl, {
+                        method: "POST",
+                        body: JSON.stringify(payload)
+                    });
+                    if (res.success) {
+                        showAlert(res.message);
+                        closeFormPetugasModal();
+                        loadAdminStaffData();
+                    } else {
+                        showAlert(res.message, "error");
+                    }
+                } catch (err) {
+                    showAlert("API Error. Mengoperasikan di penyimpanan lokal.", "error");
+                    handlePetugasSubmitSimulated(payload);
+                }
+            } else {
+                handlePetugasSubmitSimulated(payload);
+            }
+        }
+
+        function handlePetugasSubmitSimulated(payload) {
+            if (payload.subAction === "create") {
+                const idBaru = "P0" + (MOCK_PETUGAS.length + 1);
+                MOCK_PETUGAS.push({
+                    id_petugas: idBaru,
+                    nama: payload.nama,
+                    username: payload.username,
+                    password: payload.password,
+                    lokasi_kerja: payload.lokasi_kerja,
+                    telepon: payload.telepon
+                });
+                showAlert("Petugas baru berhasil ditambahkan [Simulasi]");
+            } else {
+                const idx = MOCK_PETUGAS.findIndex(p => p.id_petugas === payload.id_petugas);
+                if (idx !== -1) {
+                    MOCK_PETUGAS[idx] = { ...MOCK_PETUGAS[idx], ...payload };
+                    showAlert("Profil petugas berhasil diperbarui [Simulasi]");
+                }
+            }
+            saveToLocalDb();
+            closeFormPetugasModal();
+            loadAdminStaffData();
+        }
+
+        async function deletePetugasSubmit(id) {
+            const konfirmasi = confirm("Apakah Anda yakin ingin menghapus petugas dengan ID: " + id + "?");
+            if (!konfirmasi) return;
+
+            if (isLiveMode) {
+                try {
+                    const res = await fetchAPI(gasWebappUrl, {
+                        method: "POST",
+                        body: JSON.stringify({ action: "manageStaff", subAction: "delete", id_petugas: id })
+                    });
+                    if (res.success) {
+                        showAlert(res.message);
+                        loadAdminStaffData();
+                    }
+                } catch (err) {
+                    showAlert("API error. Melakukan penghapusan secara lokal.", "error");
+                    deletePetugasSimulated(id);
+                }
+            } else {
+                deletePetugasSimulated(id);
+            }
+        }
+
+        function deletePetugasSimulated(id) {
+            MOCK_PETUGAS = MOCK_PETUGAS.filter(p => p.id_petugas !== id);
+            saveToLocalDb();
+            showAlert("Petugas telah dihapus secara lokal.");
+            loadAdminStaffData();
+        }
+
+        // REKAP BULANAN & CETAK
+        async function loadAdminRekapData() {
+            const monthInput = document.getElementById("admin-rekap-month-input").value;
+            if (!monthInput) {
+                showAlert("Pilih bulan rekap terlebih dahulu", "error");
+                return;
+            }
+
+            const tbody = document.getElementById("admin-table-rekap-body");
+            tbody.innerHTML = `<tr><td colspan="6" class="p-4 text-center"><i class="fa-solid fa-spinner animate-spin"></i> Menghitung rekap dari Sheets...</td></tr>`;
+
+            let recapData = [];
+            if (isLiveMode) {
+                try {
+                    const res = await fetch(`${gasWebappUrl}?action=getMonthlyRecap&month=${monthInput}`).then(r => r.json());
+                    if (res.success) recapData = res.recap;
+                } catch (err) {
+                    recapData = getSimulatedMonthlyRecap(monthInput);
+                }
+            } else {
+                recapData = getSimulatedMonthlyRecap(monthInput);
+            }
+
+            tbody.innerHTML = "";
+            if (recapData.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="6" class="p-4 text-center text-gray-400">Tidak ada data absensi di bulan ini.</td></tr>`;
+            } else {
+                recapData.forEach(r => {
+                    const pct = r.total_kehadiran > 0 ? Math.round((r.tepat_waktu / r.total_kehadiran) * 100) : 0;
+                    let pctColor = "text-red-600";
+                    if (pct >= 85) pctColor = "text-emerald-600";
+                    else if (pct >= 50) pctColor = "text-yellow-600";
+
+                    tbody.innerHTML += `
+                        <tr class="hover:bg-gray-50 transition text-xs">
+                            <td class="p-3 font-semibold text-gray-800">${r.nama}</td>
+                            <td class="p-3 text-gray-500">${r.lokasi_kerja}</td>
+                            <td class="p-3 text-center font-bold text-emerald-600">${r.tepat_waktu}</td>
+                            <td class="p-3 text-center font-bold text-amber-500">${r.terlambat}</td>
+                            <td class="p-3 text-center font-bold text-gray-700">${r.total_kehadiran}</td>
+                            <td class="p-3 text-center font-black ${pctColor}">${pct}%</td>
+                        </tr>
+                    `;
+                });
+            }
+        }
+
+        function getSimulatedMonthlyRecap(filterMonth) {
+            const recap = {};
+            MOCK_PETUGAS.forEach(p => {
+                recap[p.id_petugas] = {
+                    id_petugas: p.id_petugas,
+                    nama: p.nama,
+                    lokasi_kerja: p.lokasi_kerja,
+                    tepat_waktu: 0,
+                    terlambat: 0,
+                    total_kehadiran: 0
+                };
+            });
+
+            MOCK_ABSENSI.forEach(a => {
+                const aMonth = a.tanggal.substring(0, 7);
+                if (aMonth === filterMonth) {
+                    const r = recap[a.id_petugas];
+                    if (r) {
+                        r.total_kehadiran++;
+                        if (a.status === "Tepat Waktu") {
+                            r.tepat_waktu++;
+                        } else {
+                            r.terlambat++;
+                        }
+                    }
+                }
+            });
+
+            return Object.values(recap);
+        }
+
+        function printLaporanAbsensi() {
+            const monthInput = document.getElementById("admin-rekap-month-input").value;
+            const printContent = document.getElementById("table-rekap-cetak").outerHTML;
+            const win = window.open("", "_blank");
+            win.document.write(`
+                <html>
+                <head>
+                    <title>Rekap Absensi Bulanan UIN Ar-Raniry</title>
+                    <style>
+                        body { font-family: sans-serif; padding: 40px; }
+                        h2, h3 { text-align: center; margin-bottom: 2px; }
+                        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+                        th, td { border: 1px solid #333; padding: 10px; text-align: left; font-size: 13px; }
+                        th { background-color: #f2f2f2; }
+                        .text-center { text-align: center; }
+                    </style>
+                </head>
+                <body>
+                    <h2>UNIVERSITAS ISLAM NEGERI AR-RANIRY BANDA ACEH</h2>
+                    <h3>REKAPITULASI KEHADIRAN BULANAN PETUGAS KEBERSIHAN</h3>
+                    <p style="text-align:center;">Periode Bulan: ${monthInput}</p>
+                    <hr/>
+                    ${printContent}
+                    <div style="margin-top: 50px; float: right; text-align: center; width: 250px;">
+                        <p>Banda Aceh, ${new Date().toLocaleDateString('id-ID')}</p>
+                        <p>Penanggung Jawab Kebersihan</p>
+                        <br/><br/><br/>
+                        <p><strong>Operator Administrasi UIN</strong></p>
+                    </div>
+                </body>
+                </html>
+            `);
+            win.document.close();
+            win.print();
+        }
+
+        // SAVE RUNNING TEXT (Pembaruan Fitur Pengaturan)
+        function saveRunningTextSubmit() {
+            const textVal = document.getElementById("admin-input-running-text").value.trim();
+            if (!textVal) {
+                showAlert("Teks berjalan tidak boleh kosong.", "error");
+                return;
+            }
+            runningText = textVal;
+            localStorage.setItem("running_text_content", textVal);
+            updateRunningTextUi();
+            showAlert("Running Text berhasil diubah dan disimpan secara lokal!", "success");
+        }
+
+        // PENGUMUMAN LOGIC
+        async function loadAdminAnnouncements() {
+            const listContainer = document.getElementById("admin-list-pengumuman");
+            listContainer.innerHTML = `<p class="text-xs text-gray-400">Memuat pengumuman...</p>`;
+
+            let list = [];
+            if (isLiveMode) {
+                try {
+                    const res = await fetch(`${gasWebappUrl}?action=getAnnouncements`).then(r => r.json());
+                    if (res.success) list = res.list;
+                } catch (err) {
+                    list = MOCK_PENGUMUMAN;
+                }
+            } else {
+                list = MOCK_PENGUMUMAN;
+            }
+
+            listContainer.innerHTML = "";
+            if (list.length === 0) {
+                listContainer.innerHTML = `<p class="text-xs text-gray-400 py-3">Belum ada pengumuman yang aktif.</p>`;
+            } else {
+                list.forEach(ann => {
+                    listContainer.innerHTML += `
+                        <div class="py-3 flex justify-between items-start gap-4">
+                            <div>
+                                <span class="text-[10px] font-extrabold text-gray-400 uppercase tracking-wide block">${formatDateIndo(ann.tanggal)}</span>
+                                <p class="text-xs text-gray-700 mt-0.5">${ann.isi}</p>
+                            </div>
+                            <button onclick="deleteAnnouncementSubmit('${ann.id}')" class="text-red-500 hover:text-red-700 text-xs font-semibold"><i class="fa-regular fa-trash-can"></i> Hapus</button>
+                        </div>
+                    `;
+                });
+            }
+        }
+
+        async function saveAnnouncementSubmit() {
+            const text = document.getElementById("admin-input-pengumuman").value;
+            if (!text.trim()) return showAlert("Isi pengumuman tidak boleh kosong", "error");
+
+            if (isLiveMode) {
+                try {
+                    const res = await fetchAPI(gasWebappUrl, {
+                        method: "POST",
+                        body: JSON.stringify({ action: "postAnnouncement", isi: text })
+                    });
+                    if (res.success) {
+                        showAlert(res.message);
+                        document.getElementById("admin-input-pengumuman").value = "";
+                        loadAdminAnnouncements();
+                    }
+                } catch (err) {
+                    saveAnnouncementSimulated(text);
+                }
+            } else {
+                saveAnnouncementSimulated(text);
+            }
+        }
+
+        function saveAnnouncementSimulated(text) {
+            const todayStr = new Date().toISOString().substring(0, 10);
+            MOCK_PENGUMUMAN.unshift({
+                id: "ANN-" + new Date().getTime(),
+                tanggal: todayStr,
+                isi: text
+            });
+            saveToLocalDb();
+            document.getElementById("admin-input-pengumuman").value = "";
+            showAlert("Pengumuman berhasil disebarkan secara lokal.");
+            loadAdminAnnouncements();
+        }
+
+        async function deleteAnnouncementSubmit(id) {
+            if (isLiveMode) {
+                try {
+                    const res = await fetchAPI(gasWebappUrl, {
+                        method: "POST",
+                        body: JSON.stringify({ action: "deleteAnnouncement", id: id })
+                    });
+                    if (res.success) {
+                        showAlert(res.message);
+                        loadAdminAnnouncements();
+                    }
+                } catch (err) {
+                    deleteAnnouncementSimulated(id);
+                }
+            } else {
+                deleteAnnouncementSimulated(id);
+            }
+        }
+
+        function deleteAnnouncementSimulated(id) {
+            MOCK_PENGUMUMAN = MOCK_PENGUMUMAN.filter(ann => ann.id !== id);
+            saveToLocalDb();
+            showAlert("Pengumuman dihapus.");
+            loadAdminAnnouncements();
+        }
+
+        // CONFIG SAVE & TEST
+        function saveApiUrl() {
+            const urlInput = document.getElementById("admin-config-url-input").value.trim();
+            if (!urlInput) {
+                localStorage.removeItem("gas_webapp_url");
+                gasWebappUrl = "";
+                isLiveMode = false;
+                updateConnectionState(false);
+                showAlert("Koneksi API direset ke Mode Simulasi Offline.", "success");
+            } else {
+                localStorage.setItem("gas_webapp_url", urlInput);
+                gasWebappUrl = urlInput;
+                isLiveMode = true;
+                updateConnectionState(true);
+                showAlert("Konfigurasi URL Google Apps Script berhasil disimpan. Sistem siap digunakan secara langsung!", "success");
+            }
+        }
+
+        async function testConnection() {
+            const urlInput = document.getElementById("admin-config-url-input").value.trim();
+            if (!urlInput) return showAlert("Input URL kosong.", "error");
+
+            showAlert("Menguji koneksi ke server Google Sheets...", "success");
+            try {
+                const res = await fetch(`${urlInput}?action=getAnnouncements`).then(r => r.json());
+                if (res.success) {
+                    showAlert("Koneksi Sukses! Server Google Sheets merespons dengan baik.", "success");
+                } else {
+                    showAlert("Koneksi tersambung, namun server mengembalikan respons error.", "error");
+                }
+            } catch (err) {
+                showAlert("Gagal tersambung ke Google Apps Script. Pastikan Anda telah meng-deploy sebagai 'Anyone' dan menyalin URL dengan benar.", "error");
+            }
+        }
+
+        // ============================================
+        // LOGIC FOR REAL-TIME DISPLAY MONITOR
+        // ============================================
+
+        async function loadDisplayMonitorData() {
+            const containerHadir = document.getElementById("monitor-container-hadir");
+            const containerBelum = document.getElementById("monitor-container-belum-hadir");
+            
+            document.getElementById("monitor-tanggal-hari-ini").innerHTML = `<i class="fa-solid fa-calendar-day"></i> Hari Ini: ${formatDateIndo(new Date().toISOString().substring(0, 10))}`;
+
+            let displayData = { hadir: [], belum_hadir: [] };
+
+            if (isLiveMode) {
+                try {
+                    const res = await fetch(`${gasWebappUrl}?action=getDisplayMonitor`).then(r => r.json());
+                    if (res.success) {
+                        displayData.hadir = res.hadir;
+                        displayData.belum_hadir = res.belum_hadir;
+                    }
+                } catch (err) {
+                    displayData = getSimulatedDisplayData();
+                }
+            } else {
+                displayData = getSimulatedDisplayData();
+            }
+
+            // Update stats
+            const totalHadir = displayData.hadir.length;
+            const tepatWaktuCount = displayData.hadir.filter(h => h.status === "Tepat Waktu").length;
+            const terlambatCount = displayData.hadir.filter(h => h.status === "Terlambat").length;
+            const totalStaff = totalHadir + displayData.belum_hadir.length;
+
+            document.getElementById("stat-tepat-waktu").textContent = tepatWaktuCount;
+            document.getElementById("stat-terlambat").textContent = terlambatCount;
+            document.getElementById("stat-belum-hadir").textContent = displayData.belum_hadir.length;
+            document.getElementById("stat-total-petugas").textContent = totalStaff;
+
+            document.getElementById("badge-hadir-count").textContent = `${totalHadir} Orang`;
+            document.getElementById("badge-belum-count").textContent = `${displayData.belum_hadir.length} Orang`;
+
+            // Render Hadir List
+            containerHadir.innerHTML = "";
+            if (displayData.hadir.length === 0) {
+                containerHadir.innerHTML = `<div class="p-6 text-center text-gray-400 text-xs">Belum ada petugas yang mengabsensi hari ini.</div>`;
+            } else {
+                displayData.hadir.forEach(h => {
+                    const isTelat = h.status === "Terlambat";
+                    const badgeClass = isTelat ? "bg-amber-100 text-amber-800" : "bg-emerald-100 text-emerald-800";
+                    
+                    containerHadir.innerHTML += `
+                        <div class="bg-gray-50 hover:bg-emerald-50 border-l-4 ${isTelat ? 'border-amber-500' : 'border-emerald-600'} p-3.5 rounded-r-xl flex justify-between items-center transition shadow-sm">
+                            <div>
+                                <h4 class="font-bold text-xs text-gray-800">${h.nama}</h4>
+                                <p class="text-[10px] text-gray-500 flex items-center gap-1 mt-0.5">
+                                    <i class="fa-solid fa-map-location-dot"></i> ${h.lokasi_kerja}
+                                </p>
+                            </div>
+                            <div class="text-right flex flex-col items-end gap-1">
+                                <span class="text-[11px] font-extrabold px-2 py-0.5 rounded-full ${badgeClass}">${h.status}</span>
+                                <span class="text-[10px] text-gray-500 font-mono font-semibold">Datang: ${h.jam_datang} ${h.jam_pulang ? '| Pulang: ' + h.jam_pulang : ''}</span>
+                            </div>
+                        </div>
+                    `;
+                });
+            }
+
+            // Render Belum Hadir List
+            containerBelum.innerHTML = "";
+            if (displayData.belum_hadir.length === 0) {
+                containerBelum.innerHTML = `<div class="p-6 text-center text-emerald-600 font-bold text-xs"><i class="fa-solid fa-square-check"></i> Semua petugas kebersihan telah hadir bekerja!</div>`;
+            } else {
+                displayData.belum_hadir.forEach(b => {
+                    containerBelum.innerHTML += `
+                        <div class="bg-gray-50 p-3.5 rounded-xl border-l-4 border-red-500 flex justify-between items-center shadow-sm">
+                            <div>
+                                <h4 class="font-bold text-xs text-gray-800">${b.nama}</h4>
+                                <p class="text-[10px] text-gray-500 flex items-center gap-1 mt-0.5">
+                                    <i class="fa-solid fa-map-location-dot"></i> ${b.lokasi_kerja}
+                                </p>
+                            </div>
+                            <span class="text-[10px] font-extrabold bg-red-100 text-red-800 px-2 py-1 rounded-full uppercase tracking-wider">BELUM ABSEN</span>
+                        </div>
+                    `;
+                });
+            }
+        }
+
+        function getSimulatedDisplayData() {
+            const todayStr = new Date().toISOString().substring(0, 10);
+            
+            const hadir = [];
+            const belum_hadir = [];
+
+            MOCK_PETUGAS.forEach(p => {
+                const record = MOCK_ABSENSI.find(a => a.id_petugas === p.id_petugas && a.tanggal === todayStr);
+                if (record) {
+                    hadir.push({
+                        id_petugas: p.id_petugas,
+                        nama: p.nama,
+                        lokasi_kerja: p.lokasi_kerja,
+                        jam_datang: record.jam_datang,
+                        jam_pulang: record.jam_pulang,
+                        status: record.status
+                    });
+                } else {
+                    belum_hadir.push({
+                        id_petugas: p.id_petugas,
+                        nama: p.nama,
+                        lokasi_kerja: p.lokasi_kerja
+                    });
+                }
+            });
+
+            return { hadir, belum_hadir };
+        }
+
+        // ============================================
+        // COMMON HELPER FUNCTIONS
+        // ============================================
+
+        function formatDateIndo(dateStr) {
+            if (!dateStr) return "-";
+            const dateObj = new Date(dateStr);
+            if (isNaN(dateObj)) return dateStr;
+            const options = { day: 'numeric', month: 'long', year: 'numeric' };
+            return dateObj.toLocaleDateString('id-ID', options);
+        }
+    </script>
+</body>
+</html>
