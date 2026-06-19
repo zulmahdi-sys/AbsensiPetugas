@@ -685,16 +685,18 @@
                 
                 if (docSnap.exists() && docSnap.data().url) {
                     const cloudUrl = docSnap.data().url.trim();
-                    gasWebappUrl = cloudUrl;
-                    isLiveMode = true;
-                    localStorage.setItem("gas_webapp_url", cloudUrl);
-                    updateConnectionState(true);
-                    
-                    const inputEl = document.getElementById("admin-config-url-input");
-                    if (inputEl) inputEl.value = cloudUrl;
-                } else {
-                    loadLocalConfig();
+                    if (isValidUrl(cloudUrl)) {
+                        gasWebappUrl = cloudUrl;
+                        isLiveMode = true;
+                        localStorage.setItem("gas_webapp_url", cloudUrl);
+                        updateConnectionState(true);
+                        
+                        const inputEl = document.getElementById("admin-config-url-input");
+                        if (inputEl) inputEl.value = cloudUrl;
+                        return;
+                    }
                 }
+                loadLocalConfig();
             } catch (err) {
                 console.error("Gagal memuat konfigurasi cloud:", err);
                 loadLocalConfig();
@@ -703,17 +705,45 @@
 
         function loadLocalConfig() {
             const savedUrl = localStorage.getItem("gas_webapp_url");
-            if (savedUrl && savedUrl.trim() !== "") {
+            if (savedUrl && savedUrl.trim() !== "" && isValidUrl(savedUrl)) {
                 gasWebappUrl = savedUrl;
                 isLiveMode = true;
                 updateConnectionState(true);
-            } else if (DEFAULT_GAS_WEBAPP_URL && DEFAULT_GAS_WEBAPP_URL.trim() !== "") {
+            } else if (DEFAULT_GAS_WEBAPP_URL && DEFAULT_GAS_WEBAPP_URL.trim() !== "" && isValidUrl(DEFAULT_GAS_WEBAPP_URL)) {
                 gasWebappUrl = DEFAULT_GAS_WEBAPP_URL;
                 isLiveMode = true;
                 updateConnectionState(true);
             } else {
                 isLiveMode = false;
+                gasWebappUrl = "";
                 updateConnectionState(false);
+            }
+        }
+
+        // Fungsi bantu validasi format URL Google Apps Script
+        function isValidUrl(string) {
+            try {
+                const url = new URL(string);
+                return url.protocol === "http:" || url.protocol === "https:";
+            } catch (_) {
+                return false;  
+            }
+        }
+
+        // API Call Wrapper dengan deteksi kegagalan & fallback simulasi terpadu
+        async function fetchAPI(url, options = {}, retries = 3, delay = 1000) {
+            if (!isLiveMode || !url) {
+                throw new Error("Aplikasi berjalan dalam mode simulasi offline.");
+            }
+            for (let i = 0; i < retries; i++) {
+                try {
+                    const response = await fetch(url, options);
+                    if (!response.ok) throw new Error("Jaringan error");
+                    return await response.json();
+                } catch (err) {
+                    if (i === retries - 1) throw err;
+                    await new Promise(res => setTimeout(res, delay * Math.pow(2, i)));
+                }
             }
         }
 
@@ -922,7 +952,8 @@
                     }
                 } catch (err) {
                     console.error("Gagal melakukan panggilan API:", err);
-                    showAlert("Gagal menghubungkan ke Google Sheets. Pastikan URL API benar, koneksi internet aktif, dan Apps Script dideploy sebagai 'Anyone'.", "error");
+                    showAlert("Gagal menghubungkan ke Google Sheets. Menggunakan database simulasi lokal...", "error");
+                    simulatedLogin(userIn, passIn);
                 }
             } else {
                 simulatedLogin(userIn, passIn);
@@ -1464,12 +1495,12 @@
 
         async function saveApiUrl() {
             const urlInput = document.getElementById("admin-config-url-input").value.trim();
-            if (!urlInput || urlInput === "ISI_DENGAN_URL_WEB_APP_APPS_SCRIPT_ANDA") {
+            if (!urlInput || urlInput === "ISI_DENGAN_URL_WEB_APP_APPS_SCRIPT_ANDA" || !isValidUrl(urlInput)) {
                 localStorage.removeItem("gas_webapp_url");
                 gasWebappUrl = "";
                 isLiveMode = false;
                 updateConnectionState(false);
-                showAlert("Koneksi API direset ke Mode Simulasi Offline.", "success");
+                showAlert("Koneksi API direset atau tidak valid. Aplikasi beralih ke Mode Simulasi Offline.", "success");
             } else {
                 localStorage.setItem("gas_webapp_url", urlInput);
                 gasWebappUrl = urlInput;
@@ -1477,7 +1508,6 @@
                 updateConnectionState(true);
 
                 // --- PROSES UPLOAD CONFIG API KE CLOUD FIRESTORE ---
-                // Menyimpan ke Cloud di segment genap yang valid (api_settings/config) agar semua HP langsung terhubung otomatis
                 if (window.firebaseDb && window.firebaseUser) {
                     try {
                         const configDocRef = doc(window.firebaseDb, 'artifacts', window.appId, 'public', 'data', 'api_settings', 'config');
@@ -1496,6 +1526,7 @@
         async function testConnection() {
             const urlInput = document.getElementById("admin-config-url-input").value.trim();
             if (!urlInput) return showAlert("Input URL kosong.", "error");
+            if (!isValidUrl(urlInput)) return showAlert("Format URL tidak valid. Pastikan diawali http:// atau https://", "error");
 
             showAlert("Menguji koneksi ke server Google Sheets...", "success");
             try {
@@ -1506,7 +1537,7 @@
                     showAlert("Koneksi tersambung, namun server mengembalikan respons error.", "error");
                 }
             } catch (err) {
-                showAlert("Gagal tersambung ke Google Apps Script.", "error");
+                showAlert("Gagal menghubungkan ke Google Apps Script. Pastikan Apps Script Anda sudah di-deploy dengan benar.", "error");
             }
         }
 
@@ -1527,7 +1558,7 @@
             listContainer.innerHTML = `<p class="text-xs text-gray-400">Memuat pengumuman...</p>`;
 
             let list = [];
-            if (isLiveMode) {
+            if (isLiveMode && gasWebappUrl) {
                 try {
                     const res = await fetch(`${gasWebappUrl}?action=getAnnouncements`).then(r => r.json());
                     if (res.success) list = res.list;
@@ -1560,7 +1591,7 @@
             const text = document.getElementById("admin-input-pengumuman").value;
             if (!text.trim()) return showAlert("Isi pengumuman tidak boleh kosong", "error");
 
-            if (isLiveMode) {
+            if (isLiveMode && gasWebappUrl) {
                 try {
                     const res = await fetchAPI(gasWebappUrl, {
                         method: "POST",
@@ -1593,7 +1624,7 @@
         }
 
         async function deleteAnnouncementSubmit(id) {
-            if (isLiveMode) {
+            if (isLiveMode && gasWebappUrl) {
                 try {
                     const res = await fetchAPI(gasWebappUrl, {
                         method: "POST",
@@ -1618,47 +1649,6 @@
             loadAdminAnnouncements();
         }
 
-        // Inisialisasi pergerakan autoscroll keatas (slow & smooth auto-marquee)
-        function initAutoScroll(containerId) {
-            const el = document.getElementById(containerId);
-            if (!el) return;
-            
-            // Hentikan interval lama jika ada
-            if (el.scrollTimer) {
-                clearInterval(el.scrollTimer);
-            }
-            
-            // Jika konten tidak melebihi tinggi layar display, tidak perlu scroll
-            if (el.scrollHeight <= el.clientHeight) {
-                return; 
-            }
-            
-            el.dataset.paused = "false";
-            
-            // Pasang event listener hover & touch untuk PAUSE otomatis
-            if (!el.dataset.eventsAttached) {
-                el.addEventListener('mouseenter', () => { el.dataset.paused = "true"; });
-                el.addEventListener('mouseleave', () => { el.dataset.paused = "false"; });
-                el.addEventListener('touchstart', () => { el.dataset.paused = "true"; }, {passive: true});
-                el.addEventListener('touchend', () => { el.dataset.paused = "false"; }, {passive: true});
-                el.dataset.eventsAttached = "true";
-            }
-            
-            // Menjalankan scroll pelan setinggi 1px secara berkala (35ms per step)
-            el.scrollTimer = setInterval(() => {
-                if (el.dataset.paused === "true") return;
-                
-                el.scrollTop += 1;
-                
-                // Ketika sudah melewati setengah konten (karena isinya kita duplikasi secara seamless)
-                // maka scroll ditarik kembali ke atas secara instan tanpa kelihatan melompat
-                const halfHeight = el.scrollHeight / 2;
-                if (el.scrollTop >= halfHeight) {
-                    el.scrollTop = 0;
-                }
-            }, 35);
-        }
-
         async function loadDisplayMonitorData() {
             const containerHadir = document.getElementById("monitor-container-hadir");
             const containerBelum = document.getElementById("monitor-container-belum-hadir");
@@ -1667,7 +1657,7 @@
 
             let displayData = { hadir: [], belum_hadir: [] };
 
-            if (isLiveMode) {
+            if (isLiveMode && gasWebappUrl) {
                 try {
                     const res = await fetch(`${gasWebappUrl}?action=getDisplayMonitor`).then(r => r.json());
                     if (res.success) {
@@ -1694,7 +1684,6 @@
             document.getElementById("badge-hadir-count").textContent = `${totalHadir} Orang`;
             document.getElementById("badge-belum-count").textContent = `${displayData.belum_hadir.length} Orang`;
 
-            // 1. Render kolom Hadir
             let htmlHadir = "";
             if (displayData.hadir.length === 0) {
                 htmlHadir = `<div class="p-6 text-center text-gray-400 text-xs">Belum ada petugas yang melakukan absensi hari ini.</div>`;
@@ -1720,13 +1709,10 @@
                     `;
                 });
                 
-                // Duplikasi konten agar marqee loop berjalan tanpa jeda kosong
                 containerHadir.innerHTML = `<div class="space-y-2.5 pb-2.5">${htmlHadir}</div><div class="space-y-2.5">${htmlHadir}</div>`;
-                // Aktifkan auto scroll
                 setTimeout(() => initAutoScroll("monitor-container-hadir"), 100);
             }
 
-            // 2. Render kolom Belum Hadir
             let htmlBelum = "";
             if (displayData.belum_hadir.length === 0) {
                 htmlBelum = `<div class="p-6 text-center text-emerald-600 font-bold text-xs"><i class="fa-solid fa-square-check"></i> Semua petugas kebersihan telah hadir bekerja!</div>`;
@@ -1746,9 +1732,7 @@
                     `;
                 });
                 
-                // Duplikasi konten agar marquee loop berjalan tanpa jeda kosong
                 containerBelum.innerHTML = `<div class="space-y-2.5 pb-2.5">${htmlBelum}</div><div class="space-y-2.5">${htmlBelum}</div>`;
-                // Aktifkan auto scroll
                 setTimeout(() => initAutoScroll("monitor-container-belum-hadir"), 100);
             }
         }
